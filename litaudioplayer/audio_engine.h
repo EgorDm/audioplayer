@@ -21,6 +21,9 @@ namespace litaudioplayer {
         std::shared_ptr<playback::PlaybackInterface<T>> playback = nullptr;
 
     public:
+        using DriverType = drivers::DriverInterface<T>;
+        using PlaybackType = playback::PlaybackInterface<T>;
+
         AudioEngine(const EngineProperties &properties, const std::shared_ptr<drivers::DriverInterface<T>> &driver,
                     const std::shared_ptr<playback::PlaybackInterface<T>> &playback)
                 : properties(properties), driver(driver), playback(playback) {
@@ -28,8 +31,12 @@ namespace litaudioplayer {
             // Create playback controller and register listeners
             controller = std::make_shared<playback::PlaybackController>();
             controller->addListener(this);
-            controller->addListener(playback);
-            controller->addListener(driver);
+            controller->addListener(playback.get());
+            controller->addListener(driver.get());
+        }
+
+        std::shared_ptr<playback::PlaybackController> &getController() {
+            return controller;
         }
     };
 }

@@ -11,7 +11,7 @@ using namespace litaudio::structures;
 
 namespace litaudioplayer { namespace providers {
     template <typename T>
-    class AudioSourceProvider : AudioProvider<T> {
+    class AudioSourceProvider : public AudioProvider<T> {
     protected:
         std::shared_ptr<AudioContainer<T>> source;
         int cursor = 0;
@@ -24,7 +24,7 @@ namespace litaudioplayer { namespace providers {
             assert(buffer->getChannelCount() <= source->getChannelCount()); // Otherwise we need some split or average
 
             // Determine output sample count
-            out_sample_count = min(sample_count, getSampleCount() - cursor);
+            out_sample_count = std::min(sample_count, getSampleCount() - cursor);
             if(out_sample_count <= 0) return;
 
             // Copy the data
@@ -46,7 +46,7 @@ namespace litaudioplayer { namespace providers {
         }
 
         void progress(int sample_count) override {
-            cursor = min(cursor + sample_count, getSampleCount());
+            cursor = std::min(cursor + sample_count, getSampleCount());
         }
 
         void setCursor(int value) override {

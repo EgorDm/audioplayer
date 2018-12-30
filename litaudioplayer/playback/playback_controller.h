@@ -28,8 +28,8 @@ namespace litaudioplayer { namespace playback {
         }
 
         void start() {
-            debug::log(PlaybackController_TAG, "Pausing playback");
-            for(auto listener : listeners) listener->on_pause();
+            debug::log(PlaybackController_TAG, "Starting playback");
+            for(auto listener : listeners) listener->on_start();
         }
 
         void pause() {

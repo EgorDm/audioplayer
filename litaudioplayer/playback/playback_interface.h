@@ -23,9 +23,9 @@ namespace litaudioplayer { namespace playback {
         PlaybackStatus status;
 
     public:
-        virtual AudioBufferDeinterleaved<T> *render(int sample_count, int &out_sample_count) = 0;
+        virtual void render(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) = 0;
 
-        void progress(int amount) = 0;
+        virtual void progress(int amount) = 0;
 
         PlaybackStatus getStatus() const {
             return status;

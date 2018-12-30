@@ -16,7 +16,7 @@ using namespace litcore;
 using namespace litaudiofile;
 
 namespace litaudioplayer { namespace drivers {
-    class FileDriver : DriverInterface<float> {
+    class FileDriver : public DriverInterface<float> {
     protected:
         litaudio::structures::PCMAudio output;
 
