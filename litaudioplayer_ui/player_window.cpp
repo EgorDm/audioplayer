@@ -30,8 +30,10 @@ void PlayerWindow::on_add_clicked() {
                                                 tr("Audio file (*.mp3 *.wav *.flac);;All Files (*)"));
     if(path.isNull()) return;
 
-    auto item = new QListWidgetItem(path);
-    item->setData(0, path);
+    auto data = create_audio_item(path.toStdString());
+    item_data[path.toStdString()] = data;
+    auto item = new QListWidgetItem(QString::fromStdString(data.title));
+    item->setData(Qt::UserRole, path);
     ui->listWidget->addItem(item);
 }
 
@@ -40,6 +42,10 @@ void PlayerWindow::on_remove_clicked() {
         engine->getController()->stop();
         current_item = nullptr;
         ui->currentSong->setText("Song");
+    }
+
+    for (auto item : ui->listWidget->selectedItems()) {
+        item_data.erase(item->data(Qt::UserRole).toString().toStdString());
     }
 
     qDeleteAll(ui->listWidget->selectedItems());
@@ -57,7 +63,8 @@ void PlayerWindow::on_play_clicked() {
 void PlayerWindow::onStart() {
     ui->play->setChecked(false);
     if(current_item != nullptr) {
-        ui->currentSong->setText(current_item->data(0).toString());
+        auto data = item_data.at(current_item->data(Qt::UserRole).toString().toStdString());
+        ui->currentSong->setText(QString::fromStdString(data.title));
     }
 }
 
@@ -70,7 +77,7 @@ void PlayerWindow::onStop() {
 }
 
 void PlayerWindow::startSong(QListWidgetItem *item) {
-    std::string path = item->data(0).toString().toStdString();
+    std::string path = item->data(Qt::UserRole).toString().toStdString();
     auto src = std::make_shared<AudioContainer<float>>(AV_SAMPLE_FMT_FLTP);
     AudioReader reader(src.get(), path);
     if(!reader.read()) return;

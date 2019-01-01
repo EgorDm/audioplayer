@@ -9,6 +9,8 @@
 #include <drivers/portaudio_driver.h>
 #include <playback/simple_playback.h>
 #include <QtWidgets/QListWidgetItem>
+#include <unordered_map>
+#include "audio_item.h"
 
 namespace Ui {
     class PlayerWindow;
@@ -46,6 +48,8 @@ private:
 
     std::unique_ptr<AudioEngine<float>> engine;
     std::shared_ptr<playback::SimplePlayback<float>> playback;
+
+    std::unordered_map<std::string, AudioItem> item_data;
 
     QListWidgetItem *current_item = nullptr;
 };
