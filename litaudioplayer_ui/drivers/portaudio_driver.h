@@ -63,7 +63,7 @@ namespace litaudioplayer { namespace drivers {
         }
 
         int render(int sample_count) override {
-            int out_count;
+            int out_count = 0;
             playback->render(buffer.get(), sample_count, out_count);
             playback->progress(out_count);
             return out_count;

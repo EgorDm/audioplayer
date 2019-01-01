@@ -36,7 +36,7 @@ namespace litaudioplayer { namespace drivers {
             return initialized;
         }
 
-        const std::shared_ptr<playback::PlaybackInterface<T>> &getPlayback() const {
+        std::shared_ptr<playback::PlaybackInterface<T>> &getPlayback() {
             return playback;
         }
 

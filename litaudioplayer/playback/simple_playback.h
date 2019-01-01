@@ -15,9 +15,11 @@ namespace litaudioplayer { namespace playback {
         float volume = 0.1f;
 
     public:
-        SimplePlayback(const std::shared_ptr<providers::AudioProvider<T>> &provider) : provider(provider) {}
+        explicit SimplePlayback(const std::shared_ptr<providers::AudioProvider<T>> &provider = nullptr)
+                : provider(provider) {}
 
         void render(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) override {
+            if(!provider) return;
             provider->request(buffer, buffer, sample_count, out_sample_count);
 
             // Apply volume
@@ -29,6 +31,14 @@ namespace litaudioplayer { namespace playback {
 
         void progress(int amount) override {
             provider->progress(amount);
+        }
+
+        const std::shared_ptr<providers::AudioProvider<T>> &getProvider() const {
+            return provider;
+        }
+
+        void setProvider(const std::shared_ptr<providers::AudioProvider<T>> &provider) {
+            SimplePlayback::provider = provider;
         }
     };
 }}

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <structures/audio_container.h>
+#include <cassert>
 #include "audio_provider_interface.h"
 
 using namespace litaudio::structures;

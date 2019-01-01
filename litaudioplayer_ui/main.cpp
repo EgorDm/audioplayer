@@ -10,6 +10,7 @@
 #include <playback/simple_playback.h>
 #include "drivers/portaudio_driver.h"
 #include "providers/audio_source_provider.h"
+#include "player_window.h"
 
 using namespace litaudiofile;
 using namespace litaudioplayer;
@@ -18,7 +19,7 @@ using namespace litaudio::structures;
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
 
-    std::cout << "Hello, World!" << std::endl;
+   /* std::cout << "Hello, World!" << std::endl;
 
     auto src = std::make_shared<AudioContainer<float>>(AV_SAMPLE_FMT_FLTP);
     AudioReader reader(src.get(), "data/hangar.mp3");
@@ -31,7 +32,10 @@ int main(int argc, char *argv[]) {
     LIT_ASSERT(driver->create(properties), "Main", "Failed creating driver", 1);
 
     AudioEngine<float> engine(properties, driver, playback);
-    engine.getController()->start();
+    engine.getController()->start();*/
+
+    PlayerWindow window;
+    window.show();
 
     return application.exec();
 }
