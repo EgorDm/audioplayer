@@ -16,15 +16,15 @@ namespace litaudioplayer { namespace drivers {
     class DriverInterface : public playback::PlaybackListener {
     protected:
         bool initialized = false;
-        std::shared_ptr<AudioBufferDeinterleaved<T>> buffer = nullptr;
-        playback::PlaybackInterface<T> *playback = nullptr;
+        std::unique_ptr<AudioBufferDeinterleaved<T>> buffer = nullptr;
+        std::shared_ptr<playback::PlaybackInterface<T>> playback = nullptr;
 
     public:
-        DriverInterface(playback::PlaybackInterface<T> *playback) : playback(playback) {}
+        explicit DriverInterface(const std::shared_ptr<playback::PlaybackInterface<T>> &playback)
+                : playback(playback) {}
 
         virtual bool create(EngineProperties &properties) {
-            buffer = std::make_shared<AudioBufferDeinterleaved<float>>(properties.buffer_size,
-                                                                       properties.channel_count);
+            buffer = std::make_unique<AudioBufferDeinterleaved<T>>(properties.buffer_size, properties.channel_count);
             return true;
         }
 
@@ -36,11 +36,11 @@ namespace litaudioplayer { namespace drivers {
             return initialized;
         }
 
-        playback::PlaybackInterface<T> *getPlayback() const {
+        const std::shared_ptr<playback::PlaybackInterface<T>> &getPlayback() const {
             return playback;
         }
 
-        void setPlayback(playback::PlaybackInterface<T> *playback) {
+        void setPlayback(const std::shared_ptr<playback::PlaybackInterface<T>> &playback) {
             DriverInterface::playback = playback;
         }
     };

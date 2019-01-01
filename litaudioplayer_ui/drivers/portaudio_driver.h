@@ -8,6 +8,7 @@
 #include <portaudio.h>
 #include <utils/debug.h>
 #include <utils/math.h>
+#include <utils/conversion.h>
 
 using namespace litcore;
 using namespace lit::math;
@@ -18,25 +19,38 @@ namespace litaudioplayer { namespace drivers {
     class PortAudioDriver : public DriverInterface<float> {
     private:
         PaStream *stream;
+        PaError error = paNoError;
+
+        PaStreamParameters getPaParams(EngineProperties &properties) {
+            PaStreamParameters ret;
+            ret.device = Pa_GetDefaultOutputDevice();
+            ret.channelCount = properties.channel_count;
+            ret.sampleFormat = paInt16;
+            ret.suggestedLatency = Pa_GetDeviceInfo(ret.device)->defaultHighOutputLatency;
+            ret.hostApiSpecificStreamInfo = nullptr;
+            return ret;
+        }
 
     public:
-        PortAudioDriver(playback::PlaybackInterface<float> *playback) : DriverInterface(playback) {}
+        PortAudioDriver(const std::shared_ptr<playback::PlaybackInterface<float>> &playback)
+                : DriverInterface(playback) {}
+
+        virtual ~PortAudioDriver() {
+            Pa_Terminate();
+        }
 
         bool create(EngineProperties &properties) override {
-            LIT_ASSERT(Pa_Initialize() == paNoError, PortAudioDriver_TAG, "Failed initializing portaudio", false);
+            // Initialize port audio
+            LIT_ASSERT(error = Pa_Initialize() == paNoError, PortAudioDriver_TAG,
+                       std::string("Failed initializing portaudio") + Pa_GetErrorText(error), false);
 
-            PaStreamParameters output_params;
-            output_params.device = Pa_GetDefaultOutputDevice();
-            LIT_ASSERT(output_params.device != paNoDevice, PortAudioDriver_TAG, "Cant find an output device", false);
-            output_params.channelCount = properties.channel_count;
-            output_params.sampleFormat = paInt16;
-            output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultHighOutputLatency;
-            output_params.hostApiSpecificStreamInfo = nullptr;
+            PaStreamParameters pa_params = getPaParams(properties);
+            LIT_ASSERT(pa_params.device != paNoDevice, PortAudioDriver_TAG, "Cant find an output device", false);
 
-            PaError ret = Pa_OpenStream(&stream, nullptr, &output_params, properties.sample_rate,
-                                        properties.buffer_size, 0, _stream_callback, this);
-            if (ret != paNoError) {
-                debug::log_error(PortAudioDriver_TAG, std::string("Pa_OpenStream failed: ") + Pa_GetErrorText(ret));
+            error = Pa_OpenStream(&stream, nullptr, &pa_params, properties.sample_rate, properties.buffer_size, 0,
+                                  _stream_callback, this);
+            if (error != paNoError) {
+                debug::log_error(PortAudioDriver_TAG, std::string("Pa_OpenStream failed: ") + Pa_GetErrorText(error));
                 if (stream) Pa_CloseStream(stream);
                 return false;
             }
@@ -45,7 +59,7 @@ namespace litaudioplayer { namespace drivers {
         }
 
         void destroy() override {
-
+            error = Pa_Terminate();
         }
 
         int render(int sample_count) override {
@@ -55,34 +69,25 @@ namespace litaudioplayer { namespace drivers {
             return out_count;
         }
 
-        void on_start() override {
-            if (stream) Pa_StartStream(stream);
+        void onStart() override {
+            if (stream) error = Pa_StartStream(stream);
+            LIT_ASSERT(error == paNoError, PortAudioDriver_TAG, std::string("OnStart Error:") + Pa_GetErrorText(error),);
         }
 
-        void on_pause() override {
-            if (stream) Pa_StopStream(stream);
+        void onPause() override {
+            if (stream) error = Pa_StopStream(stream);
+            LIT_ASSERT(error == paNoError, PortAudioDriver_TAG, std::string("OnPause Error:") + Pa_GetErrorText(error),);
         }
 
-        void on_stop() override {
-            if (stream) Pa_StopStream(stream);
+        void onStop() override {
+            if (stream) error = Pa_StopStream(stream);
+            LIT_ASSERT(error == paNoError, PortAudioDriver_TAG, std::string("OnStop Error:") + Pa_GetErrorText(error),);
         }
 
     private:
         bool stream_callback(uint16_t *output, int frame_count) {
             int out_count = render(frame_count);
-
-            // TODO: move into utils
-            int max_cursor = out_count * buffer->getChannelCount();
-            int channel_count = buffer->getChannelCount();
-            int out_cursor, in_cursor;
-            float *c_buffer;
-            for (int c = 0; c < buffer->getChannelCount(); ++c) {
-                c_buffer = buffer->getChannel(c);
-                for (out_cursor = c, in_cursor = 0; out_cursor < max_cursor; out_cursor += channel_count) {
-                    output[out_cursor] = (uint16_t) (clip(c_buffer[in_cursor++], -1, 1) * 32760);
-                }
-            }
-
+            utils::convert_ifltp_dfixp(buffer.get(), output, out_count);
             return out_count == 0;
         }
 
@@ -90,7 +95,8 @@ namespace litaudioplayer { namespace drivers {
                                     const PaStreamCallbackTimeInfo *timeInfo, PaStreamCallbackFlags statusFlags,
                                     void *userData) {
             #if DEBUG > 3
-            if(statusFlags & paOutputUnderflow) debug::log(PortAudioDriver_TAG, "Output underflow!");
+            // TODO: write to a var instead. No loggin in here!
+            if (statusFlags & paOutputUnderflow) debug::log(PortAudioDriver_TAG, "Output underflow!");
             #endif
 
             auto driver = static_cast<PortAudioDriver *>(userData);

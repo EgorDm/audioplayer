@@ -15,8 +15,6 @@ namespace litaudioplayer { namespace playback {
         float volume = 0.1f;
 
     public:
-        using ProviderType = providers::AudioProvider<T>;
-
         SimplePlayback(const std::shared_ptr<providers::AudioProvider<T>> &provider) : provider(provider) {}
 
         void render(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) override {

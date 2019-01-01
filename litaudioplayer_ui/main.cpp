@@ -25,18 +25,12 @@ int main(int argc, char *argv[]) {
     if(!reader.read()) exit(1);
 
     EngineProperties properties(src->getChannelCount(), src->getSampleRate(), 2048);
-
     auto provider = std::make_shared<providers::AudioSourceProvider<float>>(src);
-    auto playback = std::make_shared<playback::SimplePlayback<float>>(std::dynamic_pointer_cast<providers::AudioProvider<float>>(provider));
-
-    auto driver = std::make_shared<drivers::PortAudioDriver>(playback.get());
+    auto playback = std::make_shared<playback::SimplePlayback<float>>(provider);
+    auto driver = std::make_shared<drivers::PortAudioDriver>(playback);
     LIT_ASSERT(driver->create(properties), "Main", "Failed creating driver", 1);
 
-
-    AudioEngine<float> engine(properties,
-            std::dynamic_pointer_cast<AudioEngine<float>::DriverType>(driver),
-            std::dynamic_pointer_cast<AudioEngine<float>::PlaybackType>(playback));
-
+    AudioEngine<float> engine(properties, driver, playback);
     engine.getController()->start();
 
     return application.exec();

@@ -29,27 +29,27 @@ namespace litaudioplayer { namespace playback {
 
         void start() {
             debug::log(PlaybackController_TAG, "Starting playback");
-            for(auto listener : listeners) listener->on_start();
+            for(auto listener : listeners) listener->onStart();
         }
 
         void pause() {
             debug::log(PlaybackController_TAG, "Pausing playback");
-            for(auto listener : listeners) listener->on_pause();
+            for(auto listener : listeners) listener->onPause();
         }
 
         void seek(float p) {
             debug::log(PlaybackController_TAG, "Seeking playback position");
-            for(auto listener : listeners) listener->on_seek(p);
+            for(auto listener : listeners) listener->onSeek(p);
         }
 
         void reset() {
             debug::log(PlaybackController_TAG, "Resetting playback");
-            for(auto listener : listeners) listener->on_reset();
+            for(auto listener : listeners) listener->onReset();
         }
 
         void stop() {
             debug::log(PlaybackController_TAG, "Stopping playback");
-            for(auto listener : listeners) listener->on_stop();
+            for(auto listener : listeners) listener->onStop();
         }
     };
 }}

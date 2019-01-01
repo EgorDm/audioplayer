@@ -7,14 +7,14 @@
 namespace litaudioplayer { namespace playback {
     class PlaybackListener {
     public:
-        virtual void on_start() {};
+        virtual void onStart() {};
 
-        virtual void on_pause() {};
+        virtual void onPause() {};
 
-        virtual void on_seek(float p) {};
+        virtual void onSeek(float p) {};
 
-        virtual void on_reset() {};
+        virtual void onReset() {};
 
-        virtual void on_stop() {};
+        virtual void onStop() {};
     };
 }}

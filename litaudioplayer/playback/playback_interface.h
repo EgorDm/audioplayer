@@ -31,15 +31,15 @@ namespace litaudioplayer { namespace playback {
             return status;
         }
 
-        void on_start() override {
+        void onStart() override {
             status = Playing;
         }
 
-        void on_pause() override {
+        void onPause() override {
             status = Paused;
         }
 
-        void on_stop() override {
+        void onStop() override {
             status = Stopped;
         }
     };
