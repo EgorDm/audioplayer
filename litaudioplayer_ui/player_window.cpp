@@ -19,6 +19,8 @@ PlayerWindow::PlayerWindow(QWidget *parent)
     playback = std::make_shared<playback::SimplePlayback<float>>();
     engine = std::unique_ptr<AudioEngine<float>>(create_engine<float, drivers::PortAudioDriver>(properties, playback));
     engine->getController()->addListener(this);
+
+    connect(updater, SIGNAL(timeout()), this, SLOT(update()));
 }
 
 PlayerWindow::~PlayerWindow() {
@@ -65,15 +67,18 @@ void PlayerWindow::onStart() {
     if(current_item != nullptr) {
         auto data = item_data.at(current_item->data(Qt::UserRole).toString().toStdString());
         ui->currentSong->setText(QString::fromStdString(data.title));
+        updater->start();
     }
 }
 
 void PlayerWindow::onPause() {
     ui->play->setChecked(true);
+    updater->stop();
 }
 
 void PlayerWindow::onStop() {
     ui->play->setChecked(true);
+    updater->stop();
 }
 
 void PlayerWindow::startSong(QListWidgetItem *item) {
@@ -86,4 +91,16 @@ void PlayerWindow::startSong(QListWidgetItem *item) {
     playback->setProvider(std::make_shared<providers::AudioSourceProvider<float>>(src));
     current_item = item;
     engine->getController()->start();
+}
+
+void PlayerWindow::update() {
+    if(!ui->seekBar->isSliderDown()) {
+        ui->seekBar->setValue(
+                static_cast<int>(engine->getPlayback()->getCursor() / (double)engine->getPlayback()->getSampleCount() * 1000));
+    }
+}
+
+void PlayerWindow::on_seekBar_sliderMoved(int position) {
+    int cursor = static_cast<int>(position / 1000. * engine->getPlayback()->getSampleCount());
+    engine->getPlayback()->setCursor(cursor);
 }

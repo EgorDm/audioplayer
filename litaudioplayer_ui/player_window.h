@@ -9,6 +9,7 @@
 #include <drivers/portaudio_driver.h>
 #include <playback/simple_playback.h>
 #include <QtWidgets/QListWidgetItem>
+#include <QTimer>
 #include <unordered_map>
 #include "audio_item.h"
 
@@ -43,8 +44,14 @@ private slots:
 
     void on_play_clicked();
 
+    void on_seekBar_sliderMoved(int position);
+
+    void update();
+
 private:
     Ui::PlayerWindow *ui;
+
+    QTimer *updater = new QTimer(this);
 
     std::unique_ptr<AudioEngine<float>> engine;
     std::shared_ptr<playback::SimplePlayback<float>> playback;

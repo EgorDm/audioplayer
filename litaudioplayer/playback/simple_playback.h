@@ -40,5 +40,19 @@ namespace litaudioplayer { namespace playback {
         void setProvider(const std::shared_ptr<providers::AudioProvider<T>> &provider) {
             SimplePlayback::provider = provider;
         }
+
+        int getCursor() override {
+            if(provider) return provider->getCursor();
+            else return 0;
+        }
+
+        void setCursor(int value) override {
+            if(provider) provider->setCursor(value);
+        }
+
+        int getSampleCount() override {
+            if(provider) return provider->getSampleCount();
+            else return 0;
+        }
     };
 }}

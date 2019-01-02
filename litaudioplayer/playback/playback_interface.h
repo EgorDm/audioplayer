@@ -27,6 +27,12 @@ namespace litaudioplayer { namespace playback {
 
         virtual void progress(int amount) = 0;
 
+        virtual int getCursor() = 0;
+
+        virtual void setCursor(int value) = 0;
+
+        virtual int getSampleCount() = 0;
+
         PlaybackStatus getStatus() const {
             return status;
         }
