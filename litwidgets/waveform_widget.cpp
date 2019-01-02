@@ -9,35 +9,15 @@
 
 using namespace litwidgets;
 
-static const char *vshaderSource =
-        "#version 150\n"
-        "in vec3 inPos;\n"
-        "in vec2 inUV;\n"
-        "out vec2 UV;\n"
-        "void main() {\n"
-        "   UV = inUV;\n"
-        "   gl_Position = vec4(inPos, 1.0);\n"
-        "}\n";
-
-static const char *fshaderSource =
-        "#version 150\n"
-        "out vec4 outColor;\n"
-        "in vec2 UV;\n"
-        "void main() {\n"
-        "   outColor = vec4(UV.x, 0, UV.y, 0);\n"
-        "}\n";
-
-
 WaveformWidget::WaveformWidget(QWidget *parent)
         : QOpenGLWidget(parent), quad(create_quad()) {}
 
 void WaveformWidget::initializeGL() {
     initializeOpenGLFunctions();
-    std::cout << sizeof(Vertex2D) << std::endl;
 
     program = new QOpenGLShaderProgram;
-    program->addShaderFromSourceCode(QOpenGLShader::Vertex, vshaderSource);
-    program->addShaderFromSourceCode(QOpenGLShader::Fragment, fshaderSource);
+    program->addShaderFromSourceFile(QOpenGLShader::Vertex, ":shaders/default_plane.vs.glsl");
+    program->addShaderFromSourceFile(QOpenGLShader::Fragment, ":shaders/waveform.fs.glsl");
     program->bindAttributeLocation("inPos", 0);
     program->bindAttributeLocation("inUV", 1);
     program->link();

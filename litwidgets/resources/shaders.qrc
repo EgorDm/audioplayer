@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/shaders">
+        <file alias="default_plane.vs.glsl">shaders/default_plane.vs.glsl</file>
+        <file alias="waveform.fs.glsl">shaders/waveform.fs.glsl</file>
+    </qresource>
+</RCC>

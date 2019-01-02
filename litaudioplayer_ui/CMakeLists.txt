@@ -24,7 +24,7 @@ set(USED_LIBRARIES
         )
 
 message("Adding executable: ${PROJECT_NAME}")
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SOURCE_UI})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SOURCE_UI} ${SOURCE_RESOURCE})
 
 target_link_libraries(
         ${PROJECT_NAME}

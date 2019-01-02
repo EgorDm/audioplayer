@@ -44,17 +44,16 @@ function(init_library library_name link_libraries)
 endfunction()
 
 function(select_ui_source_files)
-    file(GLOB_RECURSE SOURCE_UI
-            "*.ui"
-            )
-    qt5_wrap_ui(UI_GENERATED_HEADERS ${SOURCE_UI})
+    file(GLOB_RECURSE SOURCE_UI "*.ui")
+    set(SOURCE_UI ${SOURCE_UI} PARENT_SCOPE)
 
-    set(SOURCE_UI ${UI_GENERATED_HEADERS} PARENT_SCOPE)
+    file(GLOB_RECURSE SOURCE_RESOURCE "*.qrc" "resources/*")
+    set(SOURCE_RESOURCE ${SOURCE_RESOURCE} PARENT_SCOPE)
 endfunction()
 
 function(init_qt_library library_name link_libraries)
     message("Adding QT library: ${library_name}")
-    add_library(${library_name} ${SOURCE_FILES} ${SOURCE_UI})
+    add_library(${library_name} ${SOURCE_FILES} ${SOURCE_UI} ${SOURCE_RESOURCE})
 
     target_link_libraries(
             ${library_name}

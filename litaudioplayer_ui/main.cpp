@@ -21,6 +21,8 @@ int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
 
    // PlayerWindow window;
+
+    Q_INIT_RESOURCE(shaders);
     TestWindow window;
     window.show();
 
