@@ -4,8 +4,10 @@
 
 #include <iostream>
 #include <QOpenGLFunctions>
+#include <QOpenGLPixelTransferOptions>
 #include "waveform_widget.h"
 #include "opengl_helper.h"
+#include <cmath>
 
 using namespace litwidgets;
 
@@ -22,6 +24,12 @@ void WaveformWidget::initializeGL() {
     program->bindAttributeLocation("inUV", 1);
     program->link();
 
+    program->bind();
+    program->setUniformValue("uTexture", 0);
+    program->setUniformValue("uBackgroundColor", QColor(55, 62, 64));
+    program->setUniformValue("uPrimaryColor", QColor(128, 147, 241));
+    program->setUniformValue("uSecondaryColor", QColor(117, 185, 214));
+
     vao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
 
@@ -35,6 +43,20 @@ void WaveformWidget::initializeGL() {
     f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
     f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
                              reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+
+    int width = 300;
+    test.resize(width * 2);
+    for (int i = 0; i < width; ++i) {
+        test[i] = abs(rand() / (float)RAND_MAX);
+        test[width + i] = test[i] * powf(test[i], 2) * abs(rand() / (float)RAND_MAX);
+    }
+
+    waveData = new QOpenGLTexture(QOpenGLTexture::Target2D);
+    waveData->setSize(width, 2);
+    waveData->setFormat(QOpenGLTexture::R32F);
+    waveData->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+    waveData->allocateStorage();
+    waveData->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32, test.data());
 }
 
 void WaveformWidget::resizeGL(int w, int h) {
@@ -47,5 +69,7 @@ void WaveformWidget::paintGL() {
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
     program->bind();
+    waveData->bind(0);
+
     glDrawArrays(GL_TRIANGLES, 0, quad.getVertexCount());
 }

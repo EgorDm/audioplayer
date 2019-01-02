@@ -9,6 +9,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
+#include <QtGui/QOpenGLTexture>
 #include "opengl_helper.h"
 
 namespace litwidgets {
@@ -31,5 +32,7 @@ namespace litwidgets {
         QOpenGLBuffer vbo;
 
         Mesh<Vertex2D> quad;
+        QOpenGLTexture *waveData;
+        std::vector<float> test;
     };
 }
