@@ -12,13 +12,16 @@ select_source_files()
 select_ui_source_files()
 
 include_directories(${litaudioplayer_INCLUDE_DIRS})
+include_directories(${litwidgets_INCLUDE_DIRS})
 include_directories(${PORTAUDIO_INCLUDE_DIRS})
 
 set(USED_LIBRARIES
-        litaudioplayer
         Qt5::Widgets
         Qt5::Multimedia
-        ${PORTAUDIO_LIBRARIES})
+        ${PORTAUDIO_LIBRARIES}
+        litaudioplayer
+        litwidgets
+        )
 
 message("Adding executable: ${PROJECT_NAME}")
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SOURCE_UI})
