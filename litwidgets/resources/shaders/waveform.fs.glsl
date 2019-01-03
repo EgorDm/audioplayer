@@ -13,6 +13,6 @@ void main() {
     float primaryThresh = texture(uTexture, vec2(UV.x, 0)).r;
     float secondaryThresh = texture(uTexture, vec2(UV.x, 0.5)).r;
     float intensity = abs(UV.y * 2 - 1);
-    outColor = intensity < primaryThresh ? uPrimaryColor : uBackgroundColor;
+    outColor = intensity < primaryThresh ? uPrimaryColor : vec4(uBackgroundColor.rgb, 0);
     outColor = intensity < secondaryThresh ? uSecondaryColor : outColor;
 }

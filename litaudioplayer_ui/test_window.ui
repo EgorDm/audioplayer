@@ -21,31 +21,32 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>100</horstretch>
+     <verstretch>100</verstretch>
     </sizepolicy>
    </property>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>30</y>
-      <width>191</width>
-      <height>23</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="litwidgets::WaveformWidget" name="waveform" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>90</y>
-      <width>751</width>
-      <height>471</height>
-     </rect>
-    </property>
-   </widget>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">b</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QLineEdit" name="lineEdit"/>
+    </item>
+    <item>
+     <widget class="litwidgets::WaveformWidget" name="waveform" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>100</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <customwidgets>

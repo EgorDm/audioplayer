@@ -11,8 +11,10 @@ select_source_files()
 select_ui_source_files()
 
 include_directories(${litsignal_INCLUDE_DIRS})
+include_directories(${litaudiofile_INCLUDE_DIRS})
 
 set(USED_LIBRARIES
-        litsignal)
+        litsignal
+        litaudiofile)
 
 init_qt_library(${PROJECT_NAME} "${USED_LIBRARIES}")

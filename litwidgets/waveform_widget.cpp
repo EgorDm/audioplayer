@@ -4,15 +4,27 @@
 
 #include <iostream>
 #include <QOpenGLFunctions>
+#include <QTimer>
 #include <QOpenGLPixelTransferOptions>
 #include "waveform_widget.h"
 #include "opengl_helper.h"
+#include <audiofile/reading.h>
 #include <cmath>
+#include <structures/signal_container.h>
 
 using namespace litwidgets;
+using namespace litsignal;
+using namespace litaudiofile;
 
 WaveformWidget::WaveformWidget(QWidget *parent)
-        : QOpenGLWidget(parent), quad(create_quad()) {}
+        : QOpenGLWidget(parent), quad(create_quad()) {
+    frameFactory = new FrameFactoryVec<float>(input, 100, 100);
+    outputBuilder = new OutputBuilderMat<float>(2);
+    pipeline = new WaveformPipeline(frameFactory, outputBuilder, generator);
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateResize()));
+}
 
 void WaveformWidget::initializeGL() {
     initializeOpenGLFunctions();
@@ -26,9 +38,9 @@ void WaveformWidget::initializeGL() {
 
     program->bind();
     program->setUniformValue("uTexture", 0);
-    program->setUniformValue("uBackgroundColor", QColor(55, 62, 64));
-    program->setUniformValue("uPrimaryColor", QColor(128, 147, 241));
-    program->setUniformValue("uSecondaryColor", QColor(117, 185, 214));
+    program->setUniformValue("uBackgroundColor", palette().color(QPalette::Background));
+    program->setUniformValue("uPrimaryColor", palette().color(QPalette::Highlight));
+    program->setUniformValue("uSecondaryColor", palette().color(QPalette::Light));
 
     vao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
@@ -44,23 +56,21 @@ void WaveformWidget::initializeGL() {
     f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
                              reinterpret_cast<void *>(3 * sizeof(GLfloat)));
 
-    int width = 300;
-    test.resize(width * 2);
-    for (int i = 0; i < width; ++i) {
-        test[i] = abs(rand() / (float)RAND_MAX);
-        test[width + i] = test[i] * powf(test[i], 2) * abs(rand() / (float)RAND_MAX);
-    }
-
     waveData = new QOpenGLTexture(QOpenGLTexture::Target2D);
-    waveData->setSize(width, 2);
     waveData->setFormat(QOpenGLTexture::R32F);
     waveData->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
-    waveData->allocateStorage();
-    waveData->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32, test.data());
+
+    litsignal::structures::SignalContainer src;
+    AudioReader reader(&src, "data/hangar.mp3");
+    reader.read();
+    fvec test = conv_to<fvec>::from(src.get_data_vec().col(0));
+    changeInput(test, false);
 }
 
 void WaveformWidget::resizeGL(int w, int h) {
     QOpenGLWidget::resizeGL(w, h);
+    timer->stop();
+    timer->start(1000);
 }
 
 void WaveformWidget::paintGL() {
@@ -72,4 +82,43 @@ void WaveformWidget::paintGL() {
     waveData->bind(0);
 
     glDrawArrays(GL_TRIANGLES, 0, quad.getVertexCount());
+}
+
+void WaveformWidget::changeInput(const fvec &input, bool redraw) {
+    this->input = input;
+
+    int frame_size = (int) std::ceil(input.size() / (float) width());
+    //frameFactory->setInput(WaveformWidget::input);
+    frameFactory->setFrameSize(frame_size);
+    frameFactory->setHopSize(frame_size);
+
+    outputBuilder->reset();
+    outputBuilder->resize(frameFactory->getFrameCount());
+
+    if (frameFactory->getFrameCount() > 1) {
+        runner.run(pipeline);
+    }
+
+    fmat test = outputBuilder->getOutput().t();
+    test(span::all, 0) /= test(span::all, 0).max();
+
+    if (test.n_rows != current_size) {
+        if(current_size != -1) {
+            waveData->destroy();
+            waveData->setFormat(QOpenGLTexture::R32F);
+            waveData->setMinMagFilters(QOpenGLTexture::Nearest, QOpenGLTexture::Nearest);
+        }
+        current_size = test.n_rows;
+        waveData->setSize(current_size, 2);
+        waveData->allocateStorage();
+    }
+
+    waveData->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32, test.memptr());
+
+    if (redraw) repaint();
+}
+
+void WaveformWidget::updateResize() {
+    std::cout << "New Size: " << width() << std::endl;
+    changeInput(input, true);
 }

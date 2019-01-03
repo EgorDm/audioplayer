@@ -45,7 +45,8 @@ endfunction()
 
 function(select_ui_source_files)
     file(GLOB_RECURSE SOURCE_UI "*.ui")
-    set(SOURCE_UI ${SOURCE_UI} PARENT_SCOPE)
+    qt5_wrap_ui(GENERATED_SOURCE_UI ${SOURCE_UI})
+    set(SOURCE_UI ${GENERATED_SOURCE_UI} PARENT_SCOPE)
 
     file(GLOB_RECURSE SOURCE_RESOURCE "*.qrc" "resources/*")
     set(SOURCE_RESOURCE ${SOURCE_RESOURCE} PARENT_SCOPE)
