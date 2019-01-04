@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by egordm on 2-1-19.
 //
@@ -6,6 +8,7 @@
 
 #include <QVector3D>
 #include <QVector2D>
+#include <QOpenGLFunctions>
 
 namespace litwidgets {
     struct Vertex2D {
@@ -13,6 +16,15 @@ namespace litwidgets {
         QVector2D uv;
 
         Vertex2D(const QVector3D &position, const QVector2D &uv) : position(position), uv(uv) {}
+
+        static void initVBOLayout() {
+            QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+            f->glEnableVertexAttribArray(0);
+            f->glEnableVertexAttribArray(1);
+            f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+            f->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                                     reinterpret_cast<void *>(3 * sizeof(GLfloat)));
+        }
     };
 
     template <typename T>
@@ -20,9 +32,9 @@ namespace litwidgets {
         std::vector<T> vertex_data;
 
     public:
-        Mesh() {}
+        Mesh() = default;
 
-        Mesh(const std::vector<T> &vertices) : vertex_data(vertices) {}
+        explicit Mesh(std::vector<T> vertices) : vertex_data(std::move(vertices)) {}
 
         void *getVertexData() {
             return vertex_data.data();
