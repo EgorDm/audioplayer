@@ -41,6 +41,15 @@ void WaveformWidget::initializeGL() {
     program->setUniformValue("uBackgroundColor", palette().color(QPalette::Background));
     program->setUniformValue("uPrimaryColor", palette().color(QPalette::Highlight));
     program->setUniformValue("uSecondaryColor", palette().color(QPalette::Light));
+    program->setUniformValue("uFocusBorderColor", QColor(255, 209, 102));
+    program->setUniformValue("uFocusWindow", QVector2D(0.2f, 0.8f));
+    program->setUniformValue("uMarkerBorderColor", QColor(239, 111, 108));
+    program->setUniformValue("uCursorBorderColor", QColor(0, 148, 198));
+    program->setUniformValue("uCursor", 0.1f);
+    for (int i = 0; i < 10; ++i) {
+        std::string name = "uMarkers[" + std::to_string(i) + "]";
+        program->setUniformValue(name.c_str(), abs(rand() / (float)RAND_MAX));
+    }
 
     vao.create();
     QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
