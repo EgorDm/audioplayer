@@ -13,7 +13,7 @@ using namespace litaudiofile;
 PlayerWindow::PlayerWindow(QWidget *parent)
         : QMainWindow(parent), ui(new Ui::PlayerWindow) {
     ui->setupUi(this);
-    this->setFixedSize(this->geometry().width(), this->geometry().height());
+    //this->setFixedSize(this->geometry().width(), this->geometry().height());
 
     EngineProperties properties(2, 44100, 2048);
     playback = std::make_shared<playback::SimplePlayback<float>>();
@@ -94,10 +94,9 @@ void PlayerWindow::startSong(QListWidgetItem *item) {
 }
 
 void PlayerWindow::update() {
-    if(!ui->seekBar->isSliderDown()) {
-        ui->seekBar->setValue(
-                static_cast<int>(engine->getPlayback()->getCursor() / (double)engine->getPlayback()->getSampleCount() * 1000));
-    }
+    // TODO: check if user is moving it
+    ui->seekbar->setCursor(engine->getPlayback()->getCursor());
+    ui->seekbar->repaint();
 }
 
 void PlayerWindow::on_seekBar_sliderMoved(int position) {

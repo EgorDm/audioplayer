@@ -61,8 +61,9 @@ void WaveformWidget::initializeGL() {
 
 void WaveformWidget::resizeGL(int w, int h) {
     QOpenGLWidget::resizeGL(w, h);
+    program->setUniformValue("uMarkerWidth", data.markerWidth / width());
     timer.stop();
-    timer.start(1000);
+    timer.start(data.redrawOnResizeTimeout);
 }
 
 void WaveformWidget::paintGL() {
@@ -71,6 +72,14 @@ void WaveformWidget::paintGL() {
 
     QOpenGLVertexArrayObject::Binder vaoBinder(&vao);
     program->bind();
+    if (cursorChanged) program->setUniformValue("uCursor", WaveformWidget::cursor);
+    if (focusChanged) program->setUniformValue("uFocusWindow", WaveformWidget::focusMarkers);
+    if (markersChanged) {
+        for (int i = 0; i < MAX_MARKER_COUNT; ++i) {
+            std::string name = "uMarkers[" + std::to_string(i) + "]";
+            program->setUniformValue(name.c_str(), markers[i]);
+        }
+    }
     waveform->bind(0);
     glDrawArrays(GL_TRIANGLES, 0, quad.getVertexCount());
 }
@@ -78,7 +87,7 @@ void WaveformWidget::paintGL() {
 void WaveformWidget::updateResize() {
     std::cout << "New Size: " << width() << std::endl;
     generator.setWidth(width());
-    if(generator.isInvalidated()) {
+    if (generator.isInvalidated()) {
         updateWaveformTexture();
         repaint();
     }
@@ -103,14 +112,37 @@ void WaveformWidget::initDefaultUniform() {
     program->setUniformValue("uBackgroundColor", palette().color(QPalette::Background));
     program->setUniformValue("uPrimaryColor", palette().color(QPalette::Highlight));
     program->setUniformValue("uSecondaryColor", palette().color(QPalette::Light));
-    program->setUniformValue("uFocusBorderColor", QColor(255, 209, 102));
-    program->setUniformValue("uFocusWindow", QVector2D(0.2f, 0.8f));
-    program->setUniformValue("uMarkerBorderColor", QColor(239, 111, 108));
-    program->setUniformValue("uCursorBorderColor", QColor(0, 148, 198));
-    program->setUniformValue("uCursor", 0.1f);
-    for (int i = 0; i < 10; ++i) {
-        std::string name = "uMarkers[" + std::to_string(i) + "]";
-        program->setUniformValue(name.c_str(), abs(rand() / (float)RAND_MAX));
+    program->setUniformValue("uFocusBorderColor", data.markerColor);
+    program->setUniformValue("uMarkerBorderColor", data.focusMarkerColor);
+    program->setUniformValue("uCursorBorderColor", data.cursorMarkerColor);
+    program->setUniformValue("uMarkerWidth", data.markerWidth / width());
+    markers.fill(-1.f);
+}
+
+void WaveformWidget::setCursor(int cursor) {
+    WaveformWidget::cursor = cursor / (float) input.size();
+    cursorChanged = true;
+}
+
+void WaveformWidget::setFocusMarkers(int start, int end) {
+    WaveformWidget::focusMarkers = QVector2D(start / (float) input.size(), end / (float) input.size());
+    focusChanged = true;
+}
+
+int WaveformWidget::setMarker(int pos) {
+    for (int i = 0; i < MAX_MARKER_COUNT; ++i) {
+        if (markers[i] > -1.f) continue;
+        markers[i] = pos / (float) input.size();
+        markersChanged = true;
+        return i;
+    }
+    return -1;
+}
+
+void WaveformWidget::removeMarker(int idx) {
+    if (idx >= 0 && idx < MAX_MARKER_COUNT) {
+        markers[idx] = -1.f;
+        markersChanged = true;
     }
 }
 

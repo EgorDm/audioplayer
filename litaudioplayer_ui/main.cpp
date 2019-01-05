@@ -20,10 +20,8 @@ using namespace litaudio::structures;
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
 
-   // PlayerWindow window;
-
     Q_INIT_RESOURCE(shaders);
-    TestWindow window;
+    PlayerWindow window;
     window.show();
 
     return application.exec();
