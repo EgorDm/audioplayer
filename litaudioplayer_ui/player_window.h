@@ -44,7 +44,7 @@ private slots:
 
     void on_play_clicked();
 
-    void on_seekBar_sliderMoved(int position);
+    void on_seekbar_cursorChangedEvent(float cursor);
 
     void update();
 

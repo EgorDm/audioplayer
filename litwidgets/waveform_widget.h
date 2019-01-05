@@ -20,7 +20,6 @@
 using namespace litsignal::algorithm;
 
 namespace litwidgets {
-
     class WaveformWidget : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
     public:
@@ -34,11 +33,13 @@ namespace litwidgets {
 
         explicit WaveformWidget(QWidget *parent = nullptr);
 
-        void setCursor(int cursor);
+        bool isMovingCursor() const;
 
-        void setFocusMarkers(int start, int end);
+        void setCursor(float cursor);
 
-        int setMarker(int pos);
+        void setFocusMarkers(float start, float end);
+
+        int setMarker(float pos);
 
         void removeMarker(int idx);
 
@@ -53,8 +54,17 @@ namespace litwidgets {
 
         virtual void initDefaultUniform();
 
+        void mousePressEvent(QMouseEvent *event) override;
+
+        void mouseReleaseEvent(QMouseEvent *event) override;
+
+        void mouseMoveEvent(QMouseEvent *event) override;
+
     private slots:
         void updateResize();
+
+    signals:
+        void cursorChangedEvent(float cursor);
 
     private:
         void updateWaveformTexture();
@@ -78,5 +88,9 @@ namespace litwidgets {
         float cursor = 0;
         QVector2D focusMarkers = {-1, 2};
         std::array<float, MAX_MARKER_COUNT> markers;
+
+        bool movingCursor = false;
     };
+
+
 }

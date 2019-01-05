@@ -6,11 +6,13 @@
 #include <QOpenGLFunctions>
 #include <QTimer>
 #include <QOpenGLPixelTransferOptions>
+#include <QMouseEvent>
 #include "waveform_widget.h"
 #include "opengl_helper.h"
 #include <audiofile/reading.h>
 #include <cmath>
 #include <structures/signal_container.h>
+#include <utils/math.h>
 
 using namespace litwidgets;
 using namespace litsignal;
@@ -119,20 +121,20 @@ void WaveformWidget::initDefaultUniform() {
     markers.fill(-1.f);
 }
 
-void WaveformWidget::setCursor(int cursor) {
-    WaveformWidget::cursor = cursor / (float) input.size();
+void WaveformWidget::setCursor(float cursor) {
+    WaveformWidget::cursor = lit::math::clip(cursor, 0.f, 1.f);
     cursorChanged = true;
 }
 
-void WaveformWidget::setFocusMarkers(int start, int end) {
-    WaveformWidget::focusMarkers = QVector2D(start / (float) input.size(), end / (float) input.size());
+void WaveformWidget::setFocusMarkers(float start, float end) {
+    WaveformWidget::focusMarkers = QVector2D(start, end);
     focusChanged = true;
 }
 
-int WaveformWidget::setMarker(int pos) {
+int WaveformWidget::setMarker(float pos) {
     for (int i = 0; i < MAX_MARKER_COUNT; ++i) {
         if (markers[i] > -1.f) continue;
-        markers[i] = pos / (float) input.size();
+        markers[i] = pos;
         markersChanged = true;
         return i;
     }
@@ -146,4 +148,24 @@ void WaveformWidget::removeMarker(int idx) {
     }
 }
 
+void WaveformWidget::mousePressEvent(QMouseEvent *event) {
+    movingCursor = true;
+    setCursor(event->x() / (float) width());
+    repaint();
+    emit cursorChangedEvent(cursor);
+}
 
+void WaveformWidget::mouseMoveEvent(QMouseEvent *event) {
+    if(!movingCursor) return;
+    setCursor(event->x() / (float) width());
+    repaint();
+    emit cursorChangedEvent(cursor);
+}
+
+void WaveformWidget::mouseReleaseEvent(QMouseEvent *event) {
+    movingCursor = false;
+}
+
+bool WaveformWidget::isMovingCursor() const {
+    return movingCursor;
+}

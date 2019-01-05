@@ -94,12 +94,14 @@ void PlayerWindow::startSong(QListWidgetItem *item) {
 }
 
 void PlayerWindow::update() {
-    // TODO: check if user is moving it
-    ui->seekbar->setCursor(engine->getPlayback()->getCursor());
-    ui->seekbar->repaint();
+    if(!ui->seekbar->isMovingCursor()) {
+        ui->seekbar->setCursor(engine->getPlayback()->getCursor() / (float) engine->getPlayback()->getSampleCount());
+        ui->seekbar->repaint();
+    }
 }
 
-void PlayerWindow::on_seekBar_sliderMoved(int position) {
-    int cursor = static_cast<int>(position / 1000. * engine->getPlayback()->getSampleCount());
-    engine->getPlayback()->setCursor(cursor);
+void PlayerWindow::on_seekbar_cursorChangedEvent(float cursor) {
+    engine->getController()->seek(cursor);
 }
+
+

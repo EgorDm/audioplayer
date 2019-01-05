@@ -5,6 +5,7 @@
 #pragma once
 
 #include <structures/audio_buffer_deinterleaved.h>
+#include <litsignal_constants.h>
 #include "playback_listener.h"
 
 using namespace litaudio::structures;
@@ -47,6 +48,10 @@ namespace litaudioplayer { namespace playback {
 
         void onStop() override {
             status = Stopped;
+        }
+
+        void onSeek(float p) override {
+            setCursor(ACI(p * getSampleCount()));
         }
     };
 

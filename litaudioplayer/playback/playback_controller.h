@@ -38,7 +38,7 @@ namespace litaudioplayer { namespace playback {
         }
 
         void seek(float p) {
-            debug::log(PlaybackController_TAG, "Seeking playback position");
+            //debug::log(PlaybackController_TAG, "Seeking playback position"); TODO: is bit spammy
             for(auto listener : listeners) listener->onSeek(p);
         }
 

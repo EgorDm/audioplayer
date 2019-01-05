@@ -11,7 +11,6 @@
 #include "drivers/portaudio_driver.h"
 #include "providers/audio_source_provider.h"
 #include "player_window.h"
-#include "test_window.h"
 
 using namespace litaudiofile;
 using namespace litaudioplayer;
