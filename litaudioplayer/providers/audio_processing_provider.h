@@ -8,25 +8,35 @@
 
 namespace litaudioplayer { namespace providers {
     template<typename T>
-    class AudioProcessingProvider : AudioProviderInterface<T> {
+    class AudioProcessingProvider : public AudioProviderInterface<T> {
     protected:
         std::shared_ptr<AudioProviderInterface<T>> child = nullptr;
 
-    private:
-        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) override {
-            if(child) child->request(buffer, sample_count, out_sample_count);
+    protected:
+        virtual void process(AudioBufferDeinterleaved<T> *buffer, int sample_count) const = 0;
+
+    public:
+        explicit AudioProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child) : child(child) {}
+
+        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+                     int cursor, uint processing_flags) const override {
+            if (child) child->request(buffer, sample_count, out_sample_count, cursor, processing_flags);
             else out_sample_count = 0;
+
+            if(out_sample_count > 0 && (processing_flags & getProcessingMask()) == 0) {
+                process(buffer, out_sample_count);
+            }
         }
 
         void reset() override {
             if (child) child->reset();
         }
 
-        int getSampleCount() override {
+        int getSampleCount() const override {
             return child ? child->getSampleCount() : 0;
         }
 
-        int getCursor() override {
+        int getCursor() const override {
             return child ? child->getCursor() : 0;
         }
 
@@ -36,6 +46,18 @@ namespace litaudioplayer { namespace providers {
 
         void setCursor(int value) override {
             if (child) child->setCursor(value);
+        }
+
+        const std::shared_ptr<AudioProviderInterface<T>> &getChild() const {
+            return child;
+        }
+
+        void setChild(const std::shared_ptr<AudioProviderInterface<T>> &child) {
+            AudioProcessingProvider::child = child;
+        }
+
+        virtual uint getProcessingMask() const {
+            return 1;
         }
     };
 }}

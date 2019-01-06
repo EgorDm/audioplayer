@@ -9,22 +9,26 @@
 using namespace litaudio::structures;
 
 namespace litaudioplayer { namespace providers {
+    const uint PROCESS_ALL = 0;
+
     template<typename T>
     class AudioProviderInterface {
     public:
         virtual ~AudioProviderInterface() = default;
 
-        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) {
-            request(buffer, sample_count, out_sample_count, getCursor());
+        void requestCurrent(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+                     uint processing_flags = PROCESS_ALL) const {
+            request(buffer, sample_count, out_sample_count, getCursor(), processing_flags);
         }
 
-        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count, int cursor) = 0;
+        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+                             int cursor, uint processing_flags) const = 0;
 
         virtual void reset() = 0;
 
-        virtual int getSampleCount() = 0;
+        virtual int getSampleCount() const = 0;
 
-        virtual int getCursor() = 0;
+        virtual int getCursor() const = 0;
 
         virtual void progress(int amount) = 0;
 
