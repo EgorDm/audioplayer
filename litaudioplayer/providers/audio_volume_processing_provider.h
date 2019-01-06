@@ -5,12 +5,14 @@
 #pragma once
 
 #include "audio_processing_provider.h"
+#include <iostream>
 
 namespace litaudioplayer { namespace providers {
     template<typename T>
     class AudioVolumeProcessingProvider : public AudioProcessingProvider<T> {
     protected:
-        float volume = 0.1f;
+        float volume;
+        float thresh;
 
         void process(AudioBufferDeinterleaved<T> *buffer, int sample_count) const override {
             // Apply volume
@@ -21,8 +23,8 @@ namespace litaudioplayer { namespace providers {
         }
 
     public:
-        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.1f)
-                : AudioProcessingProvider<T>(child), volume(volume) {}
+        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.1f, float thresh = -46)
+                : AudioProcessingProvider<T>(child), volume(volume), thresh(powf(10, thresh / 20)) {}
 
         uint getProcessingMask() const override {
             return 2 | AudioProcessingProvider<T>::getProcessingMask();
@@ -32,8 +34,18 @@ namespace litaudioplayer { namespace providers {
             return volume;
         }
 
-        void setVolume(float volume) {
-            AudioVolumeProcessingProvider::volume = volume;
+        void setVolume(float p) {
+            AudioVolumeProcessingProvider::volume = p;
+            if(volume <= thresh) volume = 0;
+        }
+
+        void setVolumeDb(float db) {
+            setVolume(powf(10, db / 20));
+        }
+
+        float getVolumeDb() {
+            if(volume == 0) return -100;
+            return 6.02f*log2(volume);
         }
     };
 }}

@@ -22,6 +22,7 @@ PlayerWindow::PlayerWindow(QWidget *parent)
     engine->getController()->addListener(this);
 
     connect(updater, SIGNAL(timeout()), this, SLOT(update()));
+    ui->volumeBar->setValue(ACI(playback->getVolumeDb()));
 }
 
 PlayerWindow::~PlayerWindow() {
@@ -104,6 +105,10 @@ void PlayerWindow::update() {
 
 void PlayerWindow::on_seekbar_cursorChangedEvent(float cursor) {
     engine->getController()->seek(cursor);
+}
+
+void PlayerWindow::on_volumeBar_sliderMoved(int value) {
+    playback->setVolumeDb(value / (float) 1);
 }
 
 

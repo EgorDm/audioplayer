@@ -40,6 +40,14 @@ namespace litaudioplayer { namespace playback {
             else return 0;
         }
 
+        void setVolumeDb(float db) {
+            provider->setVolumeDb(db);
+        }
+
+        float getVolumeDb() {
+            return provider->getVolumeDb();
+        }
+
         int getSampleCount() const override {
             if(provider) return provider->getSampleCount();
             else return 0;

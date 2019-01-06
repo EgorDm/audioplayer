@@ -46,6 +46,8 @@ private slots:
 
     void on_seekbar_cursorChangedEvent(float cursor);
 
+    void on_volumeBar_sliderMoved(int value);
+
     void update();
 
 private:
