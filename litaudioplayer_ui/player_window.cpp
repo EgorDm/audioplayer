@@ -5,6 +5,7 @@
 #include <providers/audio_source_provider.h>
 #include <audiofile/reading.h>
 #include <QtWidgets/QFileDialog>
+#include <algorithm_structure/frame_factories/frame_factory_vec_provider.h>
 #include "player_window.h"
 #include "ui_player_window.h"
 
@@ -91,6 +92,7 @@ void PlayerWindow::startSong(QListWidgetItem *item) {
     playback->setProvider(std::make_shared<providers::AudioSourceProvider<float>>(src));
     current_item = item;
     engine->getController()->start();
+    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(engine->getPlayback().get(), 1, 1)); // TODO: copy shptr
 }
 
 void PlayerWindow::update() {

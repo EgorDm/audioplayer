@@ -6,6 +6,7 @@
 
 #include <armadillo>
 #include <algorithm_structure/algorithm_interface.h>
+#include <utils/debug.h>
 
 using namespace litsignal::algorithm;
 
@@ -28,22 +29,21 @@ namespace litwidgets {
         }
     };
 
-    using WaveformPipeline = AlgorithmPipeline<fvec, fvec, frowvec, fmat, WaveformContext, WaveformGeneratorAlgorithm>;
+    using WaveformPipeline = AlgorithmPipeline<fvec, frowvec, fmat, WaveformContext, WaveformGeneratorAlgorithm>;
 
     class WaveformGenerator {
     private:
         AlgorithmSimpleRunner<WaveformPipeline> runner;
-        FrameFactoryVec<float> *frameFactory = nullptr;
         WaveformPipeline *pipeline;
 
-        fvec &input;
         int width;
         bool invalidated = true;
 
     public:
-        WaveformGenerator(fvec &input, int width) : input(input), width(width), invalidated(true) {
-            frameFactory = new FrameFactoryVec<float>(input, 1, 1);
-            pipeline = new WaveformPipeline(frameFactory, new OutputBuilderRowMat<float>(2), WaveformGeneratorAlgorithm());
+        WaveformGenerator(FrameFactoryInterface<Col<float>> *frameFactory, int width)
+                : width(width), invalidated(true), pipeline(
+                new WaveformPipeline(frameFactory, new OutputBuilderRowMat<float>(2), WaveformGeneratorAlgorithm())) {
+            if(frameFactory) setInput(frameFactory);
         }
 
         virtual ~WaveformGenerator() {
@@ -51,7 +51,7 @@ namespace litwidgets {
         }
 
         void recalculate() {
-            if(!invalidated) return;
+            if (!invalidated || !pipeline->getFrameFactory()) return;
             pipeline->getOutputBuilder()->reset();
             runner.run(pipeline);
             getOutput()(span::all, 0) /= getOutput()(span::all, 0).max();
@@ -62,13 +62,18 @@ namespace litwidgets {
             return pipeline->getOutputBuilder()->getOutput();
         }
 
-        void setInput(fvec &input) {
-            WaveformGenerator::input = input;
+        void setInput(FrameFactoryInterface<Col<float>> *frameFactory) {
+            pipeline->setFrameFactory(frameFactory);
+            if (dynamic_cast<FrameHopInterface *>(pipeline->getFrameFactory()) == nullptr) {
+                litcore::debug::log_error("WaveformGeneratorAlgorithm",
+                                 "Cannot use FrameFactory that doesnt support FrameHopInterface");
+                return;
+            }
             updateSize();
         }
 
         void setWidth(int width) {
-            if(WaveformGenerator::width == width) return;
+            if (WaveformGenerator::width == width) return;
             WaveformGenerator::width = width;
             updateSize();
         }
@@ -79,11 +84,13 @@ namespace litwidgets {
 
     private:
         void updateSize() {
-            int frame_size = (int) std::ceil(input.size() / (float) width);
-            frameFactory->setFrameSize(frame_size);
-            frameFactory->setHopSize(frame_size);
+            if(!pipeline->getFrameFactory()) return;
+            int frame_size = (int) std::ceil(pipeline->getFrameFactory()->getInputSize() / (float) width);
+            auto fhi = dynamic_cast<FrameHopInterface *>(pipeline->getFrameFactory());
+            fhi->setFrameSize(frame_size);
+            fhi->setHopSize(frame_size);
             pipeline->getOutputBuilder()->reset();
-            pipeline->getOutputBuilder()->resize(frameFactory->getFrameCount());
+            pipeline->getOutputBuilder()->resize(pipeline->getFrameFactory()->getFrameCount());
             invalidated = true;
         }
     };

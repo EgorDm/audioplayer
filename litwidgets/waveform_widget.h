@@ -11,9 +11,9 @@
 #include <QOpenGLBuffer>
 #include <QTimer>
 #include <QOpenGLTexture>
-#include <algorithm_structure/frame_factory_vec.h>
-#include <algorithm_structure/output_builder_row_mat.h>
-#include <algorithm_structure/algorithm_simple_runner.h>
+#include <algorithm_structure/frame_factories/frame_factory_vec.h>
+#include <algorithm_structure/output_builders/output_builder_row_mat.h>
+#include <algorithm_structure/runners/algorithm_simple_runner.h>
 #include "opengl_helper.h"
 #include "waveform_generator.h"
 
@@ -32,6 +32,8 @@ namespace litwidgets {
         } data;
 
         explicit WaveformWidget(QWidget *parent = nullptr);
+
+        void setInput(FrameFactoryInterface<Col<float>> *frameFactory);
 
         bool isMovingCursor() const;
 
@@ -82,7 +84,6 @@ namespace litwidgets {
 
         QOpenGLTexture *waveform;
         WaveformGenerator generator;
-        fvec input;
 
         bool cursorChanged = true, focusChanged = true, markersChanged = true;
         float cursor = 0;

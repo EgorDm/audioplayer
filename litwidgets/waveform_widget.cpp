@@ -19,18 +19,10 @@ using namespace litsignal;
 using namespace litaudiofile;
 
 WaveformWidget::WaveformWidget(QWidget *parent)
-        : QOpenGLWidget(parent), quad(create_quad()), generator(input, width()), timer(this) {
+        : QOpenGLWidget(parent), quad(create_quad()), generator(nullptr, width()), timer(this) {
     timer.setSingleShot(true);
     connect(&timer, SIGNAL(timeout()), this, SLOT(updateResize()));
-
-    litsignal::structures::SignalContainer src;
-    AudioReader reader(&src, "data/hangar.mp3");
-    reader.read();
-    input = conv_to<fvec>::from(src.get_data_vec().col(0));
-
-    generator.setInput(input);
     generator.setWidth(width());
-    generator.recalculate();
 }
 
 void WaveformWidget::initializeGL() {
@@ -119,6 +111,14 @@ void WaveformWidget::initDefaultUniform() {
     program->setUniformValue("uCursorBorderColor", data.cursorMarkerColor);
     program->setUniformValue("uMarkerWidth", data.markerWidth / width());
     markers.fill(-1.f);
+}
+
+void WaveformWidget::setInput(FrameFactoryInterface<Col<float>> *frameFactory) {
+    generator.setInput(frameFactory);
+    if (generator.isInvalidated()) {
+        updateWaveformTexture();
+        repaint();
+    }
 }
 
 void WaveformWidget::setCursor(float cursor) {
