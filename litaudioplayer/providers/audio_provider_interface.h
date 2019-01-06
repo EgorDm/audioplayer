@@ -10,12 +10,15 @@ using namespace litaudio::structures;
 
 namespace litaudioplayer { namespace providers {
     template<typename T>
-    class AudioProvider {
+    class AudioProviderInterface {
     public:
-        virtual ~AudioProvider() = default;
+        virtual ~AudioProviderInterface() = default;
 
-        virtual void request(AudioBufferDeinterleaved<T> *buffer, AudioBufferDeinterleaved<T> *swap,
-                              int sample_count, int &out_sample_count) = 0;
+        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) {
+            request(buffer, sample_count, out_sample_count, getCursor());
+        }
+
+        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count, int cursor) = 0;
 
         virtual void reset() = 0;
 
@@ -23,7 +26,7 @@ namespace litaudioplayer { namespace providers {
 
         virtual int getCursor() = 0;
 
-        virtual void progress(int sample_count) = 0;
+        virtual void progress(int amount) = 0;
 
         virtual void setCursor(int value) = 0;
 

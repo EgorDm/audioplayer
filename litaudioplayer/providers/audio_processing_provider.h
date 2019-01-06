@@ -8,14 +8,13 @@
 
 namespace litaudioplayer { namespace providers {
     template<typename T>
-    class AudioProcessingProvider : AudioProvider<T> {
+    class AudioProcessingProvider : AudioProviderInterface<T> {
     protected:
-        std::shared_ptr<AudioProvider<T>> child = nullptr;
+        std::shared_ptr<AudioProviderInterface<T>> child = nullptr;
 
     private:
-        void request(AudioBufferDeinterleaved<T> *buffer, AudioBufferDeinterleaved<T> *swap, int sample_count,
-                     int &out_sample_count) override {
-            if(child) child->request(buffer, swap, sample_count, out_sample_count);
+        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) override {
+            if(child) child->request(buffer, sample_count, out_sample_count);
             else out_sample_count = 0;
         }
 

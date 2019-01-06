@@ -11,16 +11,15 @@ namespace litaudioplayer { namespace playback {
     template<typename T>
     class SimplePlayback : public PlaybackInterface<T> {
     protected:
-        std::shared_ptr<providers::AudioProvider<T>> provider;
+        std::shared_ptr<providers::AudioProviderInterface<T>> provider;
         float volume = 0.1f;
 
     public:
-        explicit SimplePlayback(const std::shared_ptr<providers::AudioProvider<T>> &provider = nullptr)
-                : provider(provider) {}
+        SimplePlayback(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider = nullptr) : provider(provider) {}
 
-        void render(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) override {
+        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count, int cursor) override {
             if(!provider) return;
-            provider->request(buffer, buffer, sample_count, out_sample_count);
+            provider->request(buffer, sample_count, out_sample_count, cursor);
 
             // Apply volume
             for (int c = 0; c < buffer->getChannelCount(); ++c) {
@@ -29,16 +28,16 @@ namespace litaudioplayer { namespace playback {
             }
         }
 
+        void reset() override {
+            if(provider) provider->reset();
+        }
+
         void progress(int amount) override {
             provider->progress(amount);
         }
 
-        const std::shared_ptr<providers::AudioProvider<T>> &getProvider() const {
-            return provider;
-        }
-
-        void setProvider(const std::shared_ptr<providers::AudioProvider<T>> &provider) {
-            SimplePlayback::provider = provider;
+        void setCursor(int value) override {
+            if(provider) provider->setCursor(value);
         }
 
         int getCursor() override {
@@ -46,13 +45,17 @@ namespace litaudioplayer { namespace playback {
             else return 0;
         }
 
-        void setCursor(int value) override {
-            if(provider) provider->setCursor(value);
-        }
-
         int getSampleCount() override {
             if(provider) return provider->getSampleCount();
             else return 0;
+        }
+
+        const std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() const {
+            return provider;
+        }
+
+        void setProvider(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider) {
+            SimplePlayback::provider = provider;
         }
     };
 }}

@@ -12,7 +12,7 @@ using namespace litaudio::structures;
 
 namespace litaudioplayer { namespace providers {
     template <typename T>
-    class AudioSourceProvider : public AudioProvider<T> {
+    class AudioSourceProvider : public AudioProviderInterface<T> {
     protected:
         std::shared_ptr<AudioContainer<T>> source;
         int cursor = 0;
@@ -20,8 +20,7 @@ namespace litaudioplayer { namespace providers {
     public:
         AudioSourceProvider(const std::shared_ptr<AudioContainer<T>> &source) : source(source) {}
 
-        void request(AudioBufferDeinterleaved<T> *buffer, AudioBufferDeinterleaved<T> *swap, int sample_count,
-                      int &out_sample_count) override {
+        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count, int cursor) override {
             assert(buffer->getChannelCount() <= source->getChannelCount()); // Otherwise we need some split or average
 
             // Determine output sample count

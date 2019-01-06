@@ -149,10 +149,12 @@ void WaveformWidget::removeMarker(int idx) {
 }
 
 void WaveformWidget::mousePressEvent(QMouseEvent *event) {
-    movingCursor = true;
-    setCursor(event->x() / (float) width());
-    repaint();
-    emit cursorChangedEvent(cursor);
+    if(event->button() == Qt::MouseButton::LeftButton) {
+        movingCursor = true;
+        setCursor(event->x() / (float) width());
+        repaint();
+        emit cursorChangedEvent(cursor);
+    }
 }
 
 void WaveformWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -163,7 +165,7 @@ void WaveformWidget::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void WaveformWidget::mouseReleaseEvent(QMouseEvent *event) {
-    movingCursor = false;
+    if(event->button() == Qt::MouseButton::LeftButton) movingCursor = false;
 }
 
 bool WaveformWidget::isMovingCursor() const {

@@ -7,6 +7,7 @@
 #include <structures/audio_buffer_deinterleaved.h>
 #include <litsignal_constants.h>
 #include "playback_listener.h"
+#include "../providers/audio_provider_interface.h"
 
 using namespace litaudio::structures;
 
@@ -18,21 +19,13 @@ namespace litaudioplayer { namespace playback {
         Paused
     };
 
-    template <typename T>
-    class PlaybackInterface : public PlaybackListener {
+    template<typename T>
+    class PlaybackInterface : public providers::AudioProviderInterface<T>, public PlaybackListener {
     protected:
-        PlaybackStatus status;
+        PlaybackStatus status = Stopped;
 
     public:
-        virtual void render(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count) = 0;
-
-        virtual void progress(int amount) = 0;
-
-        virtual int getCursor() = 0;
-
-        virtual void setCursor(int value) = 0;
-
-        virtual int getSampleCount() = 0;
+        PlaybackInterface() = default;
 
         PlaybackStatus getStatus() const {
             return status;
@@ -51,7 +44,7 @@ namespace litaudioplayer { namespace playback {
         }
 
         void onSeek(float p) override {
-            setCursor(ACI(p * getSampleCount()));
+            this->setCursor(ACI(p * this->getSampleCount()));
         }
     };
 
