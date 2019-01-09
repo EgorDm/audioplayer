@@ -24,7 +24,7 @@ namespace litaudioplayer { namespace algorithm {
     public:
         FrameFactoryVecProvider(const providers::AudioProviderInterface <T> *input, int frame_size, int hop_size,
                                 uint processing_flags = 1, int bufferSize = 2048)
-                : FrameHopInterface(frame_size, hop_size), input(input), buffer(bufferSize, 1),
+                : FrameHopInterface(frame_size, hop_size), input(input), buffer(1, bufferSize),
                   processing_flags(processing_flags) {}
 
         Col<T> create() override {
@@ -38,12 +38,12 @@ namespace litaudioplayer { namespace algorithm {
             int out_cursor = 0;
             int remaining_samples = frame_size;
             while (remaining_samples > 0) {
-                int req_count = std::min(buffer.getCapacity(), remaining_samples);
+                int req_count = std::min(buffer.getSampleCount(), remaining_samples);
                 input->request(&buffer, req_count, out_count, cursor, processing_flags);
                 memcpy(frame.memptr() + out_cursor, buffer.getChannel(0), req_count * sizeof(T));
-                cursor += buffer.getCapacity();
-                out_cursor += buffer.getCapacity();
-                remaining_samples -= buffer.getCapacity();
+                cursor += buffer.getSampleCount();
+                out_cursor += buffer.getSampleCount();
+                remaining_samples -= buffer.getSampleCount();
             }
         }
 

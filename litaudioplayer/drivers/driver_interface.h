@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <structures/audio_buffer_deinterleaved.h>
 #include <playback/playback_interface.h>
+#include <memory>
 #include "../engine_properties.h"
 #include "../playback/playback_listener.h"
 
@@ -24,7 +24,7 @@ namespace litaudioplayer { namespace drivers {
                 : playback(playback) {}
 
         virtual bool create(EngineProperties &properties) {
-            buffer = std::make_unique<AudioBufferDeinterleaved<T>>(properties.buffer_size, properties.channel_count);
+            buffer = std::make_unique<AudioBufferDeinterleaved<T>>(properties.channel_count, properties.buffer_size);
             return true;
         }
 

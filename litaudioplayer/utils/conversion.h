@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <structures/audio_buffer_deinterleaved.h>
-
 using namespace litaudio::structures;
 using namespace lit::math;
 

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <structures/audio_buffer_deinterleaved.h>
 #include <litsignal_constants.h>
 #include "playback_listener.h"
 #include "../providers/audio_provider_interface.h"

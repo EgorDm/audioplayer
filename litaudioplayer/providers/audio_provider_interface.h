@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <structures/audio_buffer_deinterleaved.h>
+#include <structures/audio_buffer_interface_deinterleaved.h>
 
 using namespace litaudio::structures;
 

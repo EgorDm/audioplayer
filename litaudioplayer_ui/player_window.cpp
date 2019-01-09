@@ -85,7 +85,7 @@ void PlayerWindow::onStop() {
 
 void PlayerWindow::startSong(QListWidgetItem *item) {
     std::string path = item->data(Qt::UserRole).toString().toStdString();
-    auto src = std::make_shared<AudioContainer<float>>(AV_SAMPLE_FMT_FLTP);
+    auto src = std::shared_ptr<AudioContainer<AudioBufferDeinterleaved<float>>>(createAudioContainer<AudioBufferDeinterleaved<float>>(AV_SAMPLE_FMT_FLTP));
     AudioReader reader(src.get(), path);
     if(!reader.read()) return;
 

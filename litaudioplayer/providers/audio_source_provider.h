@@ -6,6 +6,7 @@
 
 #include <structures/audio_container.h>
 #include <cassert>
+#include <memory>
 #include "audio_provider_interface.h"
 
 using namespace litaudio::structures;
@@ -14,11 +15,11 @@ namespace litaudioplayer { namespace providers {
     template<typename T>
     class AudioSourceProvider : public AudioProviderInterface<T> {
     protected:
-        std::shared_ptr<AudioContainer<T>> source;
+        std::shared_ptr<AudioContainerInterface> source;
         int cursor = 0;
 
     public:
-        AudioSourceProvider(const std::shared_ptr<AudioContainer<T>> &source) : source(source) {}
+        AudioSourceProvider(const std::shared_ptr<AudioContainerInterface> &source) : source(source) {}
 
         void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
                      int cursor, uint processing_flags) const override {
@@ -30,7 +31,8 @@ namespace litaudioplayer { namespace providers {
 
             // Copy the data
             for (int c = 0; c < buffer->getChannelCount(); ++c) {
-                memcpy(buffer->getChannel(c), source->getData(c) + cursor, out_sample_count * sizeof(T));
+                // TODO: remove the cast
+                memcpy(buffer->getChannel(c), dynamic_cast<AudioBufferDeinterleavedInterface<T>*>(source->getBuffer())->getChannel(c) + cursor, out_sample_count * sizeof(T));
             }
         }
 
