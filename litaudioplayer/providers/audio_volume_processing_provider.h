@@ -14,7 +14,7 @@ namespace litaudioplayer { namespace providers {
         float volume;
         float thresh;
 
-        void process(AudioBufferDeinterleaved<T> *buffer, int sample_count) const override {
+        void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count) const override {
             // Apply volume
             for (int c = 0; c < buffer->getChannelCount(); ++c) {
                 auto cbuffer = buffer->getChannel(c);

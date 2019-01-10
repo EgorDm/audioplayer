@@ -23,7 +23,7 @@ namespace litaudioplayer { namespace playback {
             listeners.insert(listener);
         }
 
-        void removeRistener(PlaybackListener* listener) {
+        void removeListener(PlaybackListener *listener) {
             listeners.erase(listener);
         }
 

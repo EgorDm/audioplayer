@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by egordm on 29-12-18.
 //
@@ -16,12 +18,16 @@ namespace litaudioplayer { namespace providers {
     class AudioSourceProvider : public AudioProviderInterface<T> {
     protected:
         std::shared_ptr<AudioContainerInterface> source;
+        AudioBufferDeinterleavedInterface<T> *source_buffer;
         int cursor = 0;
 
     public:
-        AudioSourceProvider(const std::shared_ptr<AudioContainerInterface> &source) : source(source) {}
+        // TODO: restrict source to have deinterleaved buffer
+        AudioSourceProvider(const std::shared_ptr<AudioContainerInterface> &source)
+                : source(source),
+                  source_buffer(dynamic_cast<AudioBufferDeinterleavedInterface<T>*>(source->getBuffer())) {}
 
-        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
                      int cursor, uint processing_flags) const override {
             assert(buffer->getChannelCount() <= source->getChannelCount()); // Otherwise we need some split or average
 
@@ -32,7 +38,7 @@ namespace litaudioplayer { namespace providers {
             // Copy the data
             for (int c = 0; c < buffer->getChannelCount(); ++c) {
                 // TODO: remove the cast
-                memcpy(buffer->getChannel(c), dynamic_cast<AudioBufferDeinterleavedInterface<T>*>(source->getBuffer())->getChannel(c) + cursor, out_sample_count * sizeof(T));
+                memcpy(buffer->getChannel(c), source_buffer->getChannel(c) + cursor, out_sample_count * sizeof(T));
             }
         }
 

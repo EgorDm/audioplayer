@@ -17,7 +17,7 @@ namespace litaudioplayer { namespace playback {
         explicit SimplePlayback(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider = nullptr)
             : provider(std::make_shared<providers::AudioVolumeProcessingProvider<T>>(provider)) {}
 
-        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count, int cursor,
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count, int cursor,
                 uint processing_flags) const override {
             if(!provider) return;
             provider->request(buffer, sample_count, out_sample_count, cursor, processing_flags);

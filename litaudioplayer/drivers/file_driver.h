@@ -16,19 +16,21 @@ using namespace litcore;
 using namespace litaudiofile;
 
 namespace litaudioplayer { namespace drivers {
-    class FileDriver : public DriverInterface<float> {
+    template<typename T>
+    class FileDriver : public DriverInterface<T> {
     protected:
-        litaudio::structures::PCMAudio output;
+        std::shared_ptr<AudioContainerInterface> output;
+        AudioBufferDeinterleavedInterface<float> *source_buffer;
 
     public:
-    private:
+        FileDriver(const std::shared_ptr<playback::PlaybackInterface<T>> &playback) : DriverInterface<T>(playback) {}
+
         bool create(EngineProperties &properties) override {
             debug::log(FileDriver_TAG, "Creating FileDriver");
 
-            output = PCMAudio(properties.channel_count);
-            output.setSampleRate(properties.sample_rate);
+            output = std::make_shared<AudioContainerDeinterleaved<T>>(properties.channel_count, properties.sample_rate);
 
-            initialized = true;
+            this->initialized = true;
             return true;
         }
 
@@ -40,19 +42,23 @@ namespace litaudioplayer { namespace drivers {
                 debug::log_error(FileDriver_TAG, "FileDriver could not save the audio stream.");
             }
 
-            initialized = false;
+            this->initialized = false;
         }
 
-        void render() override {
-            // TODO: mayby add an provider as input?
+        int render(int sample_count) override {
+            int out_count = 0;
+            this->getPlayback()->requestCurrent(this->buffer.get(), sample_count, out_count);
+            this->getPlayback()->progress(out_count); // TODO write
+            return out_count;
         }
 
-        int write(const AudioBufferDeinterleaved<float> *buffer, int sample_count) override {
-            int cursor = output.getSampleCount();
-            output.setSampleCount(output.getSampleCount() + sample_count);
+        int write(const AudioBufferDeinterleaved<T> *buffer, int sample_count) override {
+            int cursor = output->getSampleCount();
+            output->setSampleCount(output->getSampleCount() + sample_count);
 
-            for (int c = 0; c < output.getChannelCount(); ++c) {
-                std::memcpy(output.getData(c) + sample_count, buffer->getChannel(c), sample_count * sizeof(float));
+            for (int c = 0; c < output->getChannelCount(); ++c) {
+                std::memcpy(source_buffer->getChannel(c) + sample_count, buffer->getChannel(c),
+                            sample_count * buffer->getSampleSize());
             }
 
             return sample_count;

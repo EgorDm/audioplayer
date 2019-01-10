@@ -13,12 +13,12 @@ namespace litaudioplayer { namespace providers {
         std::shared_ptr<AudioProviderInterface<T>> child = nullptr;
 
     protected:
-        virtual void process(AudioBufferDeinterleaved<T> *buffer, int sample_count) const = 0;
+        virtual void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count) const = 0;
 
     public:
         explicit AudioProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child) : child(child) {}
 
-        void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
                      int cursor, uint processing_flags) const override {
             if (child) child->request(buffer, sample_count, out_sample_count, cursor, processing_flags);
             else out_sample_count = 0;

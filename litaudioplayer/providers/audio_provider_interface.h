@@ -16,12 +16,12 @@ namespace litaudioplayer { namespace providers {
     public:
         virtual ~AudioProviderInterface() = default;
 
-        void requestCurrent(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+        void requestCurrent(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
                      uint processing_flags = PROCESS_ALL) const {
             request(buffer, sample_count, out_sample_count, getCursor(), processing_flags);
         }
 
-        virtual void request(AudioBufferDeinterleaved<T> *buffer, int sample_count, int &out_sample_count,
+        virtual void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
                              int cursor, uint processing_flags) const = 0;
 
         virtual void reset() = 0;
