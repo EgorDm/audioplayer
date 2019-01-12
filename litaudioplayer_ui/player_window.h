@@ -48,9 +48,13 @@ private slots:
 
     void on_volumeBar_sliderMoved(int value);
 
+    void on_shuffle_clicked();
+
     void update();
 
 private:
+    void run_test();
+
     Ui::PlayerWindow *ui;
 
     QTimer *updater = new QTimer(this);

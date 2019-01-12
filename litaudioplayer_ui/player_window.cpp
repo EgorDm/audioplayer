@@ -6,6 +6,7 @@
 #include <audiofile/reading.h>
 #include <QtWidgets/QFileDialog>
 #include <algorithm_structure/frame_factories/frame_factory_vec_provider.h>
+#include <providers/audio_metronome_source_provider.h>
 #include "player_window.h"
 #include "ui_player_window.h"
 
@@ -87,6 +88,7 @@ void PlayerWindow::startSong(QListWidgetItem *item) {
     std::string path = item->data(Qt::UserRole).toString().toStdString();
 
     auto src = std::make_shared<AudioContainerDeinterleaved<float>>();
+    src->setSampleRate(engine->getProperties().sample_rate);
     AudioReader reader(src.get(), path);
     if(!reader.read()) return;
 
@@ -110,6 +112,24 @@ void PlayerWindow::on_seekbar_cursorChangedEvent(float cursor) {
 
 void PlayerWindow::on_volumeBar_sliderMoved(int value) {
     playback->setVolumeDb(value / (float) 1);
+}
+
+void PlayerWindow::on_shuffle_clicked() {
+    run_test();
+}
+
+void PlayerWindow::run_test() {
+    auto src = std::make_shared<AudioContainerDeinterleaved<float>>();
+    src->setSampleRate(engine->getProperties().sample_rate); // TODO: this is the only thing we need. No need to specify in provider constructor
+    AudioReader reader(src.get(), "data/metronomes/A/Metronome.wav");
+    assert(reader.read());
+
+    providers::TimeSignature ts(100, 0, 4, 4);
+
+    engine->getController()->stop();
+    playback->setProvider(std::make_shared<providers::AudioMetronomeSourceProvider<float>>(src, src->getSampleRate(), ts));
+    engine->getController()->start();
+    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(engine->getPlayback().get(), 1, 1));
 }
 
 

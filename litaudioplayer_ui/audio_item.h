@@ -23,16 +23,19 @@ inline AudioItem create_audio_item(std::string path) {
     AudioItem ret;
     ret.type = AudioFile;
     ret.path = path;
+    ret.title = path;
 
-    TagReader reader(path);
-    auto tags = reader.getTags();
+    if(!path.empty()) {
+        TagReader reader(path);
+        auto tags = reader.getTags();
 
-    ret.title = "";
-    if(!tags->artist().isEmpty()) {
-        ret.title += tags->artist().toCString();
-        ret.title += " - ";
+        ret.title = "";
+        if (!tags->artist().isEmpty()) {
+            ret.title += tags->artist().toCString();
+            ret.title += " - ";
+        }
+        ret.title += tags->title().toCString();
     }
-    ret.title += tags->title().toCString();
 
     return ret;
 }

@@ -46,6 +46,10 @@ namespace litaudioplayer {
             AudioEngine::playback = playback;
             driver->setPlayback(playback);
         }
+
+        const EngineProperties &getProperties() const {
+            return properties;
+        }
     };
 
     template<typename T, typename D>
