@@ -29,9 +29,9 @@ namespace litaudioplayer {
 
             // Create playback controller and register listeners
             controller = std::make_unique<playback::PlaybackController>();
-            controller->addListener(this);
-            controller->addListener(playback.get());
-            controller->addListener(driver.get());
+            controller->addObserver(this);
+            controller->addObserver(playback.get());
+            controller->addObserver(driver.get());
         }
 
         const std::unique_ptr<playback::PlaybackController> &getController() const {

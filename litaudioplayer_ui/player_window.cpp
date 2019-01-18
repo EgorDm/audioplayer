@@ -20,7 +20,7 @@ PlayerWindow::PlayerWindow(QWidget *parent)
     EngineProperties properties(2, 44100, 2048);
     playback = std::make_shared<playback::SimplePlayback<float>>();
     engine = std::unique_ptr<AudioEngine<float>>(create_engine<float, drivers::PortAudioDriver>(properties, playback));
-    engine->getController()->addListener(this);
+    engine->getController()->addObserver(this);
 
     connect(updater, SIGNAL(timeout()), this, SLOT(update()));
     ui->volumeBar->setValue(ACI(playback->getVolumeDb()));

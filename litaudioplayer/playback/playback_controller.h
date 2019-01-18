@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 #include <utils/debug.h>
+#include <helpers/observable.h>
 #include "playback_listener.h"
 
 #define PlaybackController_TAG "PlaybackController"
@@ -13,43 +14,31 @@
 using namespace litcore;
 
 namespace litaudioplayer { namespace playback {
-    class PlaybackController {
-    private:
-        std::unordered_set<PlaybackListener*> listeners;
-
+    class PlaybackController : public helpers::Observable<PlaybackListener> {
     public:
-        void addListener(PlaybackListener* listener) {
-            if(listener == nullptr) return;
-            listeners.insert(listener);
-        }
-
-        void removeListener(PlaybackListener *listener) {
-            listeners.erase(listener);
-        }
-
         void start() {
             debug::log(PlaybackController_TAG, "Starting playback");
-            for(auto listener : listeners) listener->onStart();
+            EACH_OBSERVER(observer->onStart());
         }
 
         void pause() {
             debug::log(PlaybackController_TAG, "Pausing playback");
-            for(auto listener : listeners) listener->onPause();
+            EACH_OBSERVER(observer->onPause());
         }
 
         void seek(float p) {
             //debug::log(PlaybackController_TAG, "Seeking playback position"); TODO: is bit spammy
-            for(auto listener : listeners) listener->onSeek(p);
+            EACH_OBSERVER(observer->onSeek(p));
         }
 
         void reset() {
             debug::log(PlaybackController_TAG, "Resetting playback");
-            for(auto listener : listeners) listener->onReset();
+            EACH_OBSERVER(observer->onReset());
         }
 
         void stop() {
             debug::log(PlaybackController_TAG, "Stopping playback");
-            for(auto listener : listeners) listener->onStop();
+            EACH_OBSERVER(observer->onStop());
         }
     };
 }}
