@@ -34,6 +34,8 @@ namespace litaudioplayer { namespace providers {
 
         virtual void setCursor(int value) = 0;
 
+        virtual int getSampleRate() const = 0;
+
         bool ended() {
             return getCursor() >= getSampleCount();
         }

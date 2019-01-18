@@ -14,17 +14,17 @@ namespace litaudioplayer { namespace providers {
         float volume;
         float thresh;
 
-        void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count) const override {
+    public:
+        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.1f, float thresh = -46)
+                : AudioProcessingProvider<T>(child), volume(volume), thresh(powf(10, thresh / 20)) {}
+
+        void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int cursor) const override {
             // Apply volume
             for (int c = 0; c < buffer->getChannelCount(); ++c) {
                 auto cbuffer = buffer->getChannel(c);
                 for (int i = 0; i < sample_count; ++i) cbuffer[i] *= volume;
             }
         }
-
-    public:
-        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.1f, float thresh = -46)
-                : AudioProcessingProvider<T>(child), volume(volume), thresh(powf(10, thresh / 20)) {}
 
         uint getProcessingMask() const override {
             return 2 | AudioProcessingProvider<T>::getProcessingMask();

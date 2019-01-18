@@ -70,8 +70,8 @@ void PlayerWindow::onStart() {
     if(current_item != nullptr) {
         auto data = item_data.at(current_item->data(Qt::UserRole).toString().toStdString());
         ui->currentSong->setText(QString::fromStdString(data.title));
-        updater->start();
     }
+    updater->start();
 }
 
 void PlayerWindow::onPause() {
@@ -124,10 +124,10 @@ void PlayerWindow::run_test() {
     AudioReader reader(src.get(), "data/metronomes/A/Metronome.wav");
     assert(reader.read());
 
-    providers::TimeSignature ts(100, 0, 4, 4);
+    structs::TimeSignature ts(140, 0, 4, 4);
 
     engine->getController()->stop();
-    playback->setProvider(std::make_shared<providers::AudioMetronomeSourceProvider<float>>(src, src->getSampleRate(), ts));
+    playback->setProvider(std::make_shared<providers::AudioMetronomeSourceProvider<float>>(ts, src, src));
     engine->getController()->start();
     ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(engine->getPlayback().get(), 1, 1));
 }

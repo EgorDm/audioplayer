@@ -12,11 +12,10 @@ namespace litaudioplayer { namespace providers {
     protected:
         std::shared_ptr<AudioProviderInterface<T>> child = nullptr;
 
-    protected:
-        virtual void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count) const = 0;
-
     public:
         explicit AudioProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child) : child(child) {}
+
+        virtual void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int cursor) const = 0;
 
         void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
                      int cursor, uint processing_flags) const override {
@@ -24,7 +23,7 @@ namespace litaudioplayer { namespace providers {
             else out_sample_count = 0;
 
             if(out_sample_count > 0 && (processing_flags & getProcessingMask()) == 0) {
-                process(buffer, out_sample_count);
+                process(buffer, out_sample_count, cursor);
             }
         }
 
@@ -58,6 +57,10 @@ namespace litaudioplayer { namespace providers {
 
         virtual uint getProcessingMask() const {
             return 1;
+        }
+
+        int getSampleRate() const override {
+            return child ? child->getSampleRate() : 1;
         }
     };
 }}

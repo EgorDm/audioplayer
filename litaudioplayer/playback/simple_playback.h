@@ -60,5 +60,9 @@ namespace litaudioplayer { namespace playback {
         void setProvider(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider) {
             SimplePlayback::provider->setChild(provider);
         }
+
+        int getSampleRate() const override {
+            return provider ? provider->getSampleRate() : -1;
+        }
     };
 }}

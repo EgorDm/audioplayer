@@ -61,6 +61,10 @@ namespace litaudioplayer { namespace providers {
         void setCursor(int value) override {
             cursor = value;
         }
+
+        int getSampleRate() const override {
+            return source->getSampleRate();
+        }
     };
 }}
 
