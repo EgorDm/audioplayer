@@ -11,7 +11,7 @@ namespace litaudioplayer { namespace structs {
         float beat_duration, bar_duration;
 
     public:
-        TimeSignature(float bpm, float offset, int upper, int lower)
+        TimeSignature(float bpm = 120, float offset = 0, int upper = 4, int lower = 4)
                 : bpm(bpm), offset(offset), upper(upper), lower(lower) {
             calculateDurations();
         }
