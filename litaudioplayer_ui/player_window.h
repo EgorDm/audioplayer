@@ -7,19 +7,25 @@
 #include <QtWidgets/QMainWindow>
 #include <audio_engine.h>
 #include <drivers/portaudio_driver.h>
-#include <playback/simple_playback.h>
+#include "playback/litaudioplayback.h"
 #include <QtWidgets/QListWidgetItem>
 #include <QTimer>
 #include <unordered_map>
 #include "audio_item.h"
+#include "litaudioplayer.h"
 
 namespace Ui {
     class PlayerWindow;
 }
 
 using namespace litaudioplayer;
+using namespace litaudioplayer::structs;
 
-class PlayerWindow : public QMainWindow, public playback::PlaybackListener {
+class PlayerWindow
+        : public QMainWindow,
+          public playback::PlaybackControllerObserver,
+          public playback::LitAudioPlayback::QueueObserver,
+          public playback::LitAudioPlayback::ObserverType {
 Q_OBJECT
 
 public:
@@ -33,9 +39,19 @@ public:
 
     void onStop() override;
 
-    void startSong(QListWidgetItem *item);
+    void onCurrentChange(AudioItemDescriptor *current) override;
+
+    void onEnqueued(AudioItemDescriptor *item) override;
+
+    void onDequeued(AudioItemDescriptor *item) override;
+
+    void onQueueChanged() override;
+
+private:
+    void onProviderChange(const std::shared_ptr<AudioProviderInterface<float>> &provider) override;
 
 private slots:
+
     void on_add_clicked();
 
     void on_remove_clicked();
@@ -53,17 +69,13 @@ private slots:
     void update();
 
 private:
-    void run_test();
+    int getItemIndex(int uid);
 
+private:
     Ui::PlayerWindow *ui;
 
     QTimer *updater = new QTimer(this);
 
-    std::unique_ptr<AudioEngine<float>> engine;
-    std::shared_ptr<playback::SimplePlayback<float>> playback;
-
-    std::unordered_map<std::string, AudioItem> item_data;
-
-    QListWidgetItem *current_item = nullptr;
+    LitAudioplayer player;
 };
 

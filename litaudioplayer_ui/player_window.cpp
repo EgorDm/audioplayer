@@ -17,13 +17,12 @@ PlayerWindow::PlayerWindow(QWidget *parent)
     ui->setupUi(this);
     //this->setFixedSize(this->geometry().width(), this->geometry().height());
 
-    EngineProperties properties(2, 44100, 2048);
-    playback = std::make_shared<playback::SimplePlayback<float>>();
-    engine = std::unique_ptr<AudioEngine<float>>(create_engine<float, drivers::PortAudioDriver>(properties, playback));
-    engine->getController()->addObserver(this);
-
     connect(updater, SIGNAL(timeout()), this, SLOT(update()));
-    ui->volumeBar->setValue(ACI(playback->getVolumeDb()));
+
+    ui->volumeBar->setValue(ACI(player.getPlayback()->getVolumeProcessor()->getVolumeDb()));
+    player.getQueue().addObserver(this);
+    player.getPlayback()->addObserver(this);
+    player.getEngine()->getController()->addObserver(this);
 }
 
 PlayerWindow::~PlayerWindow() {
@@ -33,103 +32,102 @@ PlayerWindow::~PlayerWindow() {
 void PlayerWindow::on_add_clicked() {
     QString path = QFileDialog::getOpenFileName(this, tr("Open Audio file"), "data",
                                                 tr("Audio file (*.mp3 *.wav *.flac);;All Files (*)"));
-    if(path.isNull()) return;
-
-    auto data = create_audio_item(path.toStdString());
-    item_data[path.toStdString()] = data;
-    auto item = new QListWidgetItem(QString::fromStdString(data.title));
-    item->setData(Qt::UserRole, path);
-    ui->listWidget->addItem(item);
+    if (path.isNull()) return;
+    player.addAudioFile(path.toStdString());
 }
 
 void PlayerWindow::on_remove_clicked() {
-    if(ui->listWidget->selectedItems().contains(current_item)) {
-        engine->getController()->stop();
-        current_item = nullptr;
-        ui->currentSong->setText("Song");
-    }
-
     for (auto item : ui->listWidget->selectedItems()) {
-        item_data.erase(item->data(Qt::UserRole).toString().toStdString());
+        int item_index = getItemIndex(item->data(Qt::UserRole).toInt());
+        if(item_index >= 0) player.getQueue().dequeue(item_index);
     }
-
-    qDeleteAll(ui->listWidget->selectedItems());
 }
 
 void PlayerWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
-    if(item != current_item) startSong(item);
+    int item_index = getItemIndex(item->data(Qt::UserRole).toInt());
+    if(item_index < 0) return;
+
+    player.getEngine()->getController()->stop();
+    player.getQueue().setCurrent(item_index);
+    player.getEngine()->getController()->start();
 }
 
 void PlayerWindow::on_play_clicked() {
-    if (!ui->play->isChecked() && current_item != nullptr) engine->getController()->start();
-    else engine->getController()->stop();
+    if (ui->play->isChecked()) player.getEngine()->getController()->start();
+    else player.getEngine()->getController()->stop();
 }
 
 void PlayerWindow::onStart() {
-    ui->play->setChecked(false);
-    if(current_item != nullptr) {
-        auto data = item_data.at(current_item->data(Qt::UserRole).toString().toStdString());
-        ui->currentSong->setText(QString::fromStdString(data.title));
-    }
+    ui->play->setChecked(true);
     updater->start();
 }
 
 void PlayerWindow::onPause() {
-    ui->play->setChecked(true);
+    ui->play->setChecked(false);
     updater->stop();
 }
 
 void PlayerWindow::onStop() {
-    ui->play->setChecked(true);
+    ui->play->setChecked(false);
     updater->stop();
 }
 
-void PlayerWindow::startSong(QListWidgetItem *item) {
-    std::string path = item->data(Qt::UserRole).toString().toStdString();
-
-    auto src = std::make_shared<AudioContainerDeinterleaved<float>>();
-    src->setSampleRate(engine->getProperties().sample_rate);
-    AudioReader reader(src.get(), path);
-    if(!reader.read()) return;
-
-    engine->getController()->stop();
-    playback->setProvider(std::make_shared<providers::AudioSourceProvider<float>>(src));
-    current_item = item;
-    engine->getController()->start();
-    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(engine->getPlayback().get(), 1, 1)); // TODO: copy shptr
-}
-
 void PlayerWindow::update() {
-    if(!ui->seekbar->isMovingCursor()) {
-        ui->seekbar->setCursor(engine->getPlayback()->getCursor() / (float) engine->getPlayback()->getSampleCount());
+    if (!ui->seekbar->isMovingCursor()) {
+        float position = player.getEngine()->getPlayback()->getCursor() /
+                         (float) player.getEngine()->getPlayback()->getSampleCount();
+        ui->seekbar->setCursor(position);
         ui->seekbar->repaint();
     }
 }
 
 void PlayerWindow::on_seekbar_cursorChangedEvent(float cursor) {
-    engine->getController()->seek(cursor);
+    player.getEngine()->getController()->seek(cursor);
 }
 
 void PlayerWindow::on_volumeBar_sliderMoved(int value) {
-    playback->setVolumeDb(value / (float) 1);
+    player.getPlayback()->getVolumeProcessor()->setVolumeDb(value / (float) 1);
 }
 
 void PlayerWindow::on_shuffle_clicked() {
-    run_test();
+    // run_test();
 }
 
-void PlayerWindow::run_test() {
-    auto src = std::make_shared<AudioContainerDeinterleaved<float>>();
-    src->setSampleRate(engine->getProperties().sample_rate); // TODO: this is the only thing we need. No need to specify in provider constructor
-    AudioReader reader(src.get(), "data/metronomes/A/Metronome.wav");
-    assert(reader.read());
+int PlayerWindow::getItemIndex(int uid) {
+    int item_index = -1;
+    for (int i = 0; i < player.getQueue().getItems().size(); ++i) {
+        if(uid == player.getQueue().getItems()[i]->uid) item_index = i;
+    }
+    return item_index;
+}
 
-    structs::TimeSignature ts(140, 0, 4, 4);
+void PlayerWindow::onCurrentChange(AudioItemDescriptor *current) {
+    ui->currentSong->setText(QString::fromStdString(current->title));
+}
 
-    engine->getController()->stop();
-    playback->setProvider(std::make_shared<providers::AudioMetronomeSourceProvider<float>>(ts, src, src));
-    engine->getController()->start();
-    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(engine->getPlayback().get(), 1, 1));
+void PlayerWindow::onEnqueued(AudioItemDescriptor *item) {
+    auto listItem = new QListWidgetItem(QString::fromStdString(item->title));
+    listItem->setData(Qt::UserRole, item->uid);
+    ui->listWidget->addItem(listItem);
+}
+
+void PlayerWindow::onDequeued(AudioItemDescriptor *item) {
+    for (int i = 0; i < ui->listWidget->count(); ++i) {
+        if(ui->listWidget->item(i)->data(Qt::UserRole).toInt() != item->uid) continue;
+        auto listItem = ui->listWidget->item(i);
+        ui->listWidget->removeItemWidget(listItem);
+        delete listItem;
+    }
+}
+
+void PlayerWindow::onQueueChanged() {
+    PlaybackQueueListener::onQueueChanged();
+}
+
+void PlayerWindow::onProviderChange(const std::shared_ptr<AudioProviderInterface<float>> &provider) {
+    // TODO: copy shptr
+    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
+
 }
 
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "playback/playback_listener.h"
+#include "playback/playback_controller.h"
 #include "drivers/driver_interface.h"
 #include "playback/playback_controller.h"
 #include "playback/playback_interface.h"
@@ -13,7 +13,7 @@
 
 namespace litaudioplayer {
     template<typename T>
-    class AudioEngine : public playback::PlaybackListener {
+    class AudioEngine : public playback::PlaybackControllerObserver {
     private:
         EngineProperties properties;
         std::shared_ptr<drivers::DriverInterface<T>> driver = nullptr;
