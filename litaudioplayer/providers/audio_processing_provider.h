@@ -10,49 +10,42 @@ namespace litaudioplayer { namespace providers {
     template<typename T>
     class AudioProcessingProvider : public AudioProviderInterface<T> {
     protected:
-        std::shared_ptr<AudioProviderInterface<T>> child = nullptr;
+        std::shared_ptr<AudioProviderInterface < T>> child = nullptr;
 
     public:
         explicit AudioProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child) : child(child) {}
 
-        virtual void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int cursor) const = 0;
+        virtual void process(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                             int sample_count, int cursor) const = 0;
 
-        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
-                     int cursor, uint processing_flags) const override {
-            if (child) child->request(buffer, sample_count, out_sample_count, cursor, processing_flags);
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                     int sample_count, int &out_sample_count, int cursor, uint processing_flags) const override {
+            if (getChild()) getChild()->request(buffer, swap, sample_count, out_sample_count, cursor, processing_flags);
             else out_sample_count = 0;
 
-            if(out_sample_count > 0 && (processing_flags & getProcessingMask()) == 0) {
-                process(buffer, out_sample_count, cursor);
+            if (out_sample_count > 0 && (processing_flags & getProcessingMask()) == 0) {
+                process(buffer, swap, out_sample_count, cursor);
             }
         }
 
         void reset() override {
-            if (child) child->reset();
+            if (getChild()) getChild()->reset();
         }
 
         int getSampleCount() const override {
-            return child ? child->getSampleCount() : 0;
+            return getChild() ? getChild()->getSampleCount() : 0;
         }
 
         int getCursor() const override {
-            return child ? child->getCursor() : 0;
+            return getChild() ? getChild()->getCursor() : 0;
         }
 
         void progress(int sample_count) override {
-            if (child) child->progress(sample_count);
+            if (getChild()) getChild()->progress(sample_count);
         }
 
         void setCursor(int value) override {
-            if (child) child->setCursor(value);
-        }
-
-        const std::shared_ptr<AudioProviderInterface<T>> &getChild() const {
-            return child;
-        }
-
-        void setChild(const std::shared_ptr<AudioProviderInterface<T>> &child) {
-            AudioProcessingProvider::child = child;
+            if (getChild()) getChild()->setCursor(value);
         }
 
         virtual uint getProcessingMask() const {
@@ -60,7 +53,25 @@ namespace litaudioplayer { namespace providers {
         }
 
         int getSampleRate() const override {
-            return child ? child->getSampleRate() : 1;
+            return getChild() ? getChild()->getSampleRate() : 1;
+        }
+
+        virtual const std::shared_ptr<AudioProviderInterface < T>> &
+
+        getChild() const {
+            return child;
+        }
+
+        virtual std::shared_ptr<AudioProviderInterface < T>> &
+
+        getChild() {
+            return child;
+        }
+
+        virtual void setChild(const std::shared_ptr<AudioProviderInterface < T>>
+
+        &child) {
+            AudioProcessingProvider::child = child;
         }
     };
 }}

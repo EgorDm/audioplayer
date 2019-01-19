@@ -11,58 +11,55 @@ namespace litaudioplayer { namespace playback {
     template<typename T>
     class SimplePlayback : public PlaybackInterface<T> {
     protected:
-        std::shared_ptr<providers::AudioVolumeProcessingProvider<T>> provider;
+        std::shared_ptr<providers::AudioVolumeProcessingProvider<T>> volume_processor;
+        std::shared_ptr<providers::AudioProviderInterface<T>> &provider;
 
     public:
         explicit SimplePlayback(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider = nullptr)
-            : provider(std::make_shared<providers::AudioVolumeProcessingProvider<T>>(provider)) {}
+                : volume_processor(std::make_shared<providers::AudioVolumeProcessingProvider<T>>(provider)),
+                  provider(volume_processor->getChild()) {}
 
-        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count, int cursor,
-                uint processing_flags) const override {
-            if(!provider) return;
-            provider->request(buffer, sample_count, out_sample_count, cursor, processing_flags);
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                int sample_count, int &out_sample_count, int cursor, uint processing_flags) const override {
+            if (!provider) return;
+            volume_processor->request(buffer, swap, sample_count, out_sample_count, cursor, processing_flags);
+        }
+
+        const std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() const override {
+            return provider;
+        }
+
+        void setProvider(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider) override {
+            SimplePlayback::provider = provider;
+            PlaybackInterface<T>::setProvider(provider);
+        }
+
+        std::shared_ptr<providers::AudioVolumeProcessingProvider<T>> &getVolumeProcessor() {
+            return volume_processor;
         }
 
         void reset() override {
-            if(provider) provider->reset();
+            volume_processor->reset();
         }
 
         void progress(int amount) override {
-            provider->progress(amount);
+            volume_processor->progress(amount);
         }
 
         void setCursor(int value) override {
-            if(provider) provider->setCursor(value);
+            volume_processor->setCursor(value);
         }
 
         int getCursor() const override {
-            if(provider) return provider->getCursor();
-            else return 0;
-        }
-
-        void setVolumeDb(float db) {
-            provider->setVolumeDb(db);
-        }
-
-        float getVolumeDb() {
-            return provider->getVolumeDb();
+            return volume_processor->getCursor();
         }
 
         int getSampleCount() const override {
-            if(provider) return provider->getSampleCount();
-            else return 0;
-        }
-
-        const std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() const {
-            return provider->getChild();
-        }
-
-        void setProvider(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider) {
-            SimplePlayback::provider->setChild(provider);
+            return volume_processor->getSampleCount();
         }
 
         int getSampleRate() const override {
-            return provider ? provider->getSampleRate() : -1;
+            return volume_processor->getSampleRate();
         }
     };
 }}

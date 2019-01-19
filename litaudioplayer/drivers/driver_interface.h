@@ -7,16 +7,17 @@
 #include <playback/playback_interface.h>
 #include <memory>
 #include "../engine_properties.h"
-#include "../playback/playback_listener.h"
+#include "playback/playback_controller.h"
 
 using namespace litaudio::structures;
 
 namespace litaudioplayer { namespace drivers {
     template<typename T>
-    class DriverInterface : public playback::PlaybackListener {
+    class DriverInterface : public playback::PlaybackControllerObserver {
     protected:
         bool initialized = false;
         std::unique_ptr<AudioBufferDeinterleaved<T>> buffer = nullptr;
+        std::unique_ptr<AudioBufferDeinterleaved<T>> swap = nullptr;
         std::shared_ptr<playback::PlaybackInterface<T>> playback = nullptr;
 
     public:
@@ -25,6 +26,8 @@ namespace litaudioplayer { namespace drivers {
 
         virtual bool create(EngineProperties &properties) {
             buffer = std::make_unique<AudioBufferDeinterleaved<T>>(properties.channel_count, properties.buffer_size);
+            // TODO: cap the swap buffer size
+            swap = std::make_unique<AudioBufferDeinterleaved<T>>(properties.channel_count, properties.buffer_size);
             return true;
         }
 

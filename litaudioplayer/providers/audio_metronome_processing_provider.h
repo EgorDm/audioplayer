@@ -28,7 +28,8 @@ namespace litaudioplayer { namespace providers {
                 : AudioProcessingProvider<T>(child), time_signature(time_signature),
                   downbeat_tick(downbeat_tick), beat_tick(beat_tick) {}
 
-        void process(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int cursor) const override {
+        void process(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                     int sample_count, int cursor) const override {
             // Interval between each 1 / ts.upper th note. In samples
             int interval = static_cast<int>(this->getSampleRate() * time_signature.getBeatDuration());
             int offset = static_cast<int>(time_signature.getOffset() * this->getSampleRate());
@@ -37,7 +38,8 @@ namespace litaudioplayer { namespace providers {
             int in_cursor = (cursor + offset) % interval;
             while (out_cursor < sample_count) {
                 int copy_count = std::min(beat_tick->getSampleCount() - in_cursor, sample_count - out_cursor);
-                litaudio::utils::add_buffers<T>(buffer, dynamic_cast<const AudioBufferDeinterleavedInterface<T>*>(beat_tick->getBuffer()), out_cursor, in_cursor, copy_count);
+                litaudio::utils::add_buffers<T>(buffer, dynamic_cast<const AudioBufferDeinterleavedInterface<T> *>(beat_tick->getBuffer()),
+                                                out_cursor, in_cursor, copy_count);
                 out_cursor += interval - in_cursor;
                 in_cursor = 0;
             }

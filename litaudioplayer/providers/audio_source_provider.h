@@ -25,9 +25,10 @@ namespace litaudioplayer { namespace providers {
         // TODO: restrict source to have deinterleaved buffer
         AudioSourceProvider(const std::shared_ptr<AudioContainerInterface> &source)
                 : source(source),
-                  source_buffer(dynamic_cast<AudioBufferDeinterleavedInterface<T>*>(source->getBuffer())) {}
+                  source_buffer(dynamic_cast<AudioBufferDeinterleavedInterface<T> *>(source->getBuffer())) {}
 
-        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count,
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                     int sample_count, int &out_sample_count,
                      int cursor, uint processing_flags) const override {
             assert(buffer->getChannelCount() <= source->getChannelCount()); // Otherwise we need some split or average
 

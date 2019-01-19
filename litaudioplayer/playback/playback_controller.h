@@ -7,14 +7,27 @@
 #include <unordered_set>
 #include <utils/debug.h>
 #include <helpers/observable.h>
-#include "playback_listener.h"
+#include "playback_controller.h"
 
 #define PlaybackController_TAG "PlaybackController"
 
 using namespace litcore;
 
 namespace litaudioplayer { namespace playback {
-    class PlaybackController : public helpers::Observable<PlaybackListener> {
+    class PlaybackControllerObserver {
+    public:
+        virtual void onStart() {}
+
+        virtual void onPause() {}
+
+        virtual void onSeek(float p) {}
+
+        virtual void onReset() {}
+
+        virtual void onStop() {}
+    };
+
+    class PlaybackController : public helpers::Observable<PlaybackControllerObserver> {
     public:
         void start() {
             debug::log(PlaybackController_TAG, "Starting playback");

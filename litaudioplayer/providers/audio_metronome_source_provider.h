@@ -22,8 +22,8 @@ namespace litaudioplayer { namespace providers {
                 : processor(std::shared_ptr<AudioProviderInterface<T>>(this), time_signature, downbeat_tick,
                             beat_tick) {}
 
-        void request(AudioBufferDeinterleavedInterface<T> *buffer, int sample_count, int &out_sample_count, int cursor,
-                     uint processing_flags) const override {
+        void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
+                     int sample_count, int &out_sample_count, int cursor, uint processing_flags) const override {
             buffer->reset();
             out_sample_count = sample_count;
 
