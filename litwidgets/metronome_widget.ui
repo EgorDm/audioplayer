@@ -39,29 +39,17 @@
    </item>
    <item>
     <layout class="QGridLayout" name="metronomeLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>BPM</string>
+        <string>Offset</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QSpinBox" name="spbMetronomeBPM">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimum">
-        <number>30</number>
-       </property>
-       <property name="maximum">
-        <number>300</number>
-       </property>
-       <property name="value">
-        <number>120</number>
+     <item row="3" column="0" colspan="2">
+      <widget class="QCheckBox" name="chkMetronomeWithAudio">
+       <property name="text">
+        <string>Start with audio</string>
        </property>
       </widget>
      </item>
@@ -141,10 +129,36 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QCheckBox" name="chkMetronomeWithAudio">
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="spbMetronomeBPM">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimum">
+        <number>30</number>
+       </property>
+       <property name="maximum">
+        <number>300</number>
+       </property>
+       <property name="value">
+        <number>120</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Start with audio</string>
+        <string>BPM</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="spbOffset">
+       <property name="singleStep">
+        <double>0.100000000000000</double>
        </property>
       </widget>
      </item>
@@ -163,6 +177,9 @@
       <widget class="QPushButton" name="btnMetronomeStart">
        <property name="text">
         <string>Start</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

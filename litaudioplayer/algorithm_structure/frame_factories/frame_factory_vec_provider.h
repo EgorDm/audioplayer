@@ -19,13 +19,14 @@ namespace litaudioplayer { namespace algorithm {
     class FrameFactoryVecProvider : public FrameFactoryInterface<Col<T>>, public FrameHopInterface {
     private:
         const providers::AudioProviderInterface<T> *input;
-        structures::AudioBufferDeinterleavedRef<T> buffer, swap;
+        structures::AudioBufferDeinterleavedRef<T> buffer;
+        litaudio::structures::AudioBufferDeinterleaved<T> swap;
         uint processing_flags, channel;
 
     public:
         FrameFactoryVecProvider(const providers::AudioProviderInterface<T> *input, int frame_size, int hop_size,
-                                uint channel = 0, uint processing_flags = 1, int buffer_size = 2048)
-                : FrameHopInterface(frame_size, hop_size), input(input), buffer(1, buffer_size), swap(1, buffer_size),
+                                uint channel = 0, uint processing_flags = 1)
+                : FrameHopInterface(frame_size, hop_size), input(input), buffer(1, frame_size), swap(1, frame_size),
                   channel(channel), processing_flags(processing_flags) {}
 
         Col<T> create() override {
@@ -33,6 +34,7 @@ namespace litaudioplayer { namespace algorithm {
         }
 
         void fill(Col<T> &frame, int i) override {
+            frame.fill(0);
             int out_count = 0;
             buffer.setChannel(0, &frame);
             input->request(&buffer, &swap, buffer.getSampleCount(), out_count, getPos(i), processing_flags);
@@ -48,6 +50,11 @@ namespace litaudioplayer { namespace algorithm {
 
         int getInputSize() override {
             return input->getSampleCount();
+        }
+
+        void setFrameSize(int frame_size) override {
+            FrameHopInterface::setFrameSize(frame_size);
+            swap.setSampleCount(frame_size);
         }
     };
 }}

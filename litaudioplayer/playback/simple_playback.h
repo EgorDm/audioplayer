@@ -12,25 +12,22 @@ namespace litaudioplayer { namespace playback {
     class SimplePlayback : public PlaybackInterface<T> {
     protected:
         std::shared_ptr<providers::AudioVolumeProcessingProvider<T>> volume_processor;
-        std::shared_ptr<providers::AudioProviderInterface<T>> &provider;
 
     public:
         explicit SimplePlayback(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider = nullptr)
-                : volume_processor(std::make_shared<providers::AudioVolumeProcessingProvider<T>>(provider)),
-                  provider(volume_processor->getChild()) {}
+                : volume_processor(std::make_shared<providers::AudioVolumeProcessingProvider<T>>(provider)) {}
 
         void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
                 int sample_count, int &out_sample_count, int cursor, uint processing_flags) const override {
-            if (!provider) return;
             volume_processor->request(buffer, swap, sample_count, out_sample_count, cursor, processing_flags);
         }
 
-        const std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() const override {
-            return provider;
+        std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() override {
+            return volume_processor->getChild();
         }
 
         void setProvider(const std::shared_ptr<providers::AudioProviderInterface<T>> &provider) override {
-            SimplePlayback::provider = provider;
+            volume_processor->setChild(provider);
             PlaybackInterface<T>::setProvider(provider);
         }
 

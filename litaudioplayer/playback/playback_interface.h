@@ -38,7 +38,11 @@ namespace litaudioplayer { namespace playback {
 
         PlaybackInterface() = default;
 
-        virtual const std::shared_ptr<AudioProviderInterface<T>> &getProvider() const = 0;
+        const std::shared_ptr<AudioProviderInterface<T>> &getProvider() const {
+            return const_cast<PlaybackInterface<T> *>(this)->getProvider();
+        }
+
+        virtual std::shared_ptr<providers::AudioProviderInterface<T>> &getProvider() = 0;
 
         virtual void setProvider(const std::shared_ptr<AudioProviderInterface<T>> &provider) {
             EACH_OBSERVER(observer->onProviderChange(provider));

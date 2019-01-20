@@ -17,14 +17,14 @@ namespace litaudioplayer { namespace providers {
     class AudioMetronomeProcessingProvider : public AudioProcessingProvider<T> {
     protected:
         TimeSignature time_signature;
-        std::shared_ptr<AudioContainerInterface> downbeat_tick;
-        std::shared_ptr<AudioContainerInterface> beat_tick;
+        std::shared_ptr<AudioContainerDeinterleavedType<T>> downbeat_tick;
+        std::shared_ptr<AudioContainerDeinterleavedType<T>> beat_tick;
 
     public:
         AudioMetronomeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child,
                                          const TimeSignature &time_signature,
-                                         const std::shared_ptr<AudioContainerInterface> &downbeat_tick,
-                                         const std::shared_ptr<AudioContainerInterface> &beat_tick)
+                                         const std::shared_ptr<AudioContainerDeinterleavedType<T>> &downbeat_tick,
+                                         const std::shared_ptr<AudioContainerDeinterleavedType<T>> &beat_tick)
                 : AudioProcessingProvider<T>(child), time_signature(time_signature),
                   downbeat_tick(downbeat_tick), beat_tick(beat_tick) {}
 
@@ -38,8 +38,7 @@ namespace litaudioplayer { namespace providers {
             int in_cursor = (cursor + offset) % interval;
             while (out_cursor < sample_count) {
                 int copy_count = std::min(beat_tick->getSampleCount() - in_cursor, sample_count - out_cursor);
-                litaudio::utils::add_buffers<T>(buffer, dynamic_cast<const AudioBufferDeinterleavedInterface<T> *>(beat_tick->getBuffer()),
-                                                out_cursor, in_cursor, copy_count);
+                litaudio::utils::add_buffers<T>(buffer, beat_tick->getTypedBuffer(), out_cursor, in_cursor, copy_count);
                 out_cursor += interval - in_cursor;
                 in_cursor = 0;
             }
@@ -61,11 +60,11 @@ namespace litaudioplayer { namespace providers {
             AudioMetronomeProcessingProvider::downbeat_tick = downbeat_tick;
         }
 
-        const std::shared_ptr<AudioContainerInterface> &getBeatTick() const {
+        const std::shared_ptr<AudioContainerDeinterleavedType<T>> &getBeatTick() const {
             return beat_tick;
         }
 
-        void setBeatTick(const std::shared_ptr<AudioContainerInterface> &beat_tick) {
+        void setBeatTick(const std::shared_ptr<AudioContainerDeinterleavedType<T>> &beat_tick) {
             AudioMetronomeProcessingProvider::beat_tick = beat_tick;
         }
     };

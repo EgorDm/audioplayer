@@ -56,21 +56,15 @@ namespace litaudioplayer { namespace providers {
             return getChild() ? getChild()->getSampleRate() : 1;
         }
 
-        virtual const std::shared_ptr<AudioProviderInterface < T>> &
-
-        getChild() const {
+        virtual const std::shared_ptr<AudioProviderInterface < T>> &getChild() const {
             return child;
         }
 
-        virtual std::shared_ptr<AudioProviderInterface < T>> &
-
-        getChild() {
+        virtual std::shared_ptr<AudioProviderInterface < T>> &getChild() {
             return child;
         }
 
-        virtual void setChild(const std::shared_ptr<AudioProviderInterface < T>>
-
-        &child) {
+        virtual void setChild(const std::shared_ptr<AudioProviderInterface < T>> &child) {
             AudioProcessingProvider::child = child;
         }
     };

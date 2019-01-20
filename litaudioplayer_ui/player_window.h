@@ -66,6 +66,10 @@ private slots:
 
     void on_shuffle_clicked();
 
+    void on_metronomeWidget_startClicked(bool down);
+
+    void on_metronomeWidget_detectClicked();
+
     void update();
 
 private:

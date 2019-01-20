@@ -35,7 +35,11 @@ namespace litaudioplayer { namespace playback {
         void setCurrent(int index) override {
             if(index >= queue.size()) return;
             cursor = index;
-            current = queue[index];
+            setCurrent(queue[index]);
+        }
+
+        void setCurrent(T* item) {
+            current = item;
             EACH_OBSERVER(observer->onCurrentChange(current));
         }
 

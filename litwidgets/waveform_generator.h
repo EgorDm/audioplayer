@@ -21,6 +21,7 @@ namespace litwidgets {
 
         void processFrame(WaveformContext &context, arma::fvec &frame, int i) override {
             context.getOutput()(0) = abs(frame).max(); // Max value
+            auto test =  abs(frame).max();
             context.getOutput()(1) = sqrtf(arma::dot(frame, frame) / frame.size()); // RMS
         }
 

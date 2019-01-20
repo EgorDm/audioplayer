@@ -39,13 +39,13 @@ void PlayerWindow::on_add_clicked() {
 void PlayerWindow::on_remove_clicked() {
     for (auto item : ui->listWidget->selectedItems()) {
         int item_index = getItemIndex(item->data(Qt::UserRole).toInt());
-        if(item_index >= 0) player.getQueue().dequeue(item_index);
+        if (item_index >= 0) player.getQueue().dequeue(item_index);
     }
 }
 
 void PlayerWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
     int item_index = getItemIndex(item->data(Qt::UserRole).toInt());
-    if(item_index < 0) return;
+    if (item_index < 0) return;
 
     player.getEngine()->getController()->stop();
     player.getQueue().setCurrent(item_index);
@@ -96,7 +96,7 @@ void PlayerWindow::on_shuffle_clicked() {
 int PlayerWindow::getItemIndex(int uid) {
     int item_index = -1;
     for (int i = 0; i < player.getQueue().getItems().size(); ++i) {
-        if(uid == player.getQueue().getItems()[i]->uid) item_index = i;
+        if (uid == player.getQueue().getItems()[i]->uid) item_index = i;
     }
     return item_index;
 }
@@ -113,7 +113,7 @@ void PlayerWindow::onEnqueued(AudioItemDescriptor *item) {
 
 void PlayerWindow::onDequeued(AudioItemDescriptor *item) {
     for (int i = 0; i < ui->listWidget->count(); ++i) {
-        if(ui->listWidget->item(i)->data(Qt::UserRole).toInt() != item->uid) continue;
+        if (ui->listWidget->item(i)->data(Qt::UserRole).toInt() != item->uid) continue;
         auto listItem = ui->listWidget->item(i);
         ui->listWidget->removeItemWidget(listItem);
         delete listItem;
@@ -127,6 +127,24 @@ void PlayerWindow::onQueueChanged() {
 void PlayerWindow::onProviderChange(const std::shared_ptr<AudioProviderInterface<float>> &provider) {
     // TODO: copy shptr
     ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
+}
+
+void PlayerWindow::on_metronomeWidget_startClicked(bool down) {
+    auto time_signature = ui->metronomeWidget->getTimeSignature();
+    player.getPlayback()->setTimeSignature(time_signature);
+    player.getPlayback()->getMixerProvider()->setMaster(1);
+
+    std::stringstream ss;
+    ss << "Metronome - BPM: " << time_signature.getBpm() << ", TS: " << time_signature.getUpper() << "/" << time_signature.getLower();
+    auto item = new struct::AudioItemDescriptor(ss.str(), false, "", true, time_signature);
+    player.getEngine()->getController()->stop();
+    player.getQueue().setCurrent(item);
+    player.getEngine()->getController()->start();
+
+    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
+}
+
+void PlayerWindow::on_metronomeWidget_detectClicked() {
 
 }
 

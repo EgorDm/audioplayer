@@ -17,17 +17,17 @@ namespace litaudioplayer { namespace providers {
 
     public:
         AudioMetronomeSourceProvider(const TimeSignature &time_signature,
-                                     const std::shared_ptr<AudioContainerInterface> &downbeat_tick,
-                                     const std::shared_ptr<AudioContainerInterface> &beat_tick)
+                                     const std::shared_ptr<AudioContainerDeinterleavedType<T>> &downbeat_tick,
+                                     const std::shared_ptr<AudioContainerDeinterleavedType<T>> &beat_tick)
                 : processor(std::shared_ptr<AudioProviderInterface<T>>(this), time_signature, downbeat_tick,
                             beat_tick) {}
 
         void request(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
                      int sample_count, int &out_sample_count, int cursor, uint processing_flags) const override {
-            buffer->reset();
             out_sample_count = sample_count;
+            buffer->reset();
 
-            processor.process(buffer, out_sample_count, cursor);
+            processor.process(buffer, swap, out_sample_count, cursor);
         }
 
         void reset() override {
@@ -52,6 +52,10 @@ namespace litaudioplayer { namespace providers {
 
         int getSampleRate() const override {
             return processor.getBeatTick()->getSampleRate();
+        }
+
+        AudioMetronomeProcessingProvider<T> &getProcessor() {
+            return processor;
         }
     };
 }}
