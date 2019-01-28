@@ -47,6 +47,8 @@ public:
 
     void onQueueChanged() override;
 
+    void changeFocus(bool recalculate);
+
 private:
     void onProviderChange(const std::shared_ptr<AudioProviderInterface<float>> &provider) override;
 

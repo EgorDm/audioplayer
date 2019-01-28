@@ -63,5 +63,16 @@ namespace litaudioplayer { namespace structs {
         float getBarDuration() const {
             return bar_duration;
         }
+
+        bool operator==(const TimeSignature &rhs) const {
+            return bpm == rhs.bpm &&
+                   offset == rhs.offset &&
+                   upper == rhs.upper &&
+                   lower == rhs.lower;
+        }
+
+        bool operator!=(const TimeSignature &rhs) const {
+            return !(rhs == *this);
+        }
     };
 }}

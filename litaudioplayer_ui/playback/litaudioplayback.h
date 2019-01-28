@@ -19,6 +19,9 @@ namespace litaudioplayer { namespace playback {
         std::shared_ptr<AudioMetronomeSourceProvider<float>> metronome_provider;
 
     public:
+        static constexpr int AUDIO_MIX_INDEX = 0;
+        static constexpr int METRONOME_MIX_INDEX = 1;
+
         LitAudioPlayback(const EngineProperties &properties, AudioProviderLoader<float, structs::AudioItemDescriptor *> *loader);
 
         std::shared_ptr<AudioMixerProcessingProvider<float>> &getMixerProvider();

@@ -48,13 +48,50 @@ void PlayerWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
     if (item_index < 0) return;
 
     player.getEngine()->getController()->stop();
+    player.getPlayback()->getMixerProvider()->setMaster(playback::LitAudioPlayback::AUDIO_MIX_INDEX);
+    changeFocus(false);
     player.getQueue().setCurrent(item_index);
     player.getEngine()->getController()->start();
 }
 
+void PlayerWindow::changeFocus(bool recalculate) {
+    int focus = player.getPlayback()->getMixerProvider()->getMasterIndex();
+    bool metronome_focus = focus == playback::LitAudioPlayback::METRONOME_MIX_INDEX ||
+                           ui->metronomeWidget->getStartWithAudio();
+
+    // Change the mix focus
+    player.getPlayback()->getMixerProvider()->setEnabled(playback::LitAudioPlayback::AUDIO_MIX_INDEX,
+                                                         focus == playback::LitAudioPlayback::AUDIO_MIX_INDEX);
+    player.getPlayback()->getMixerProvider()->setEnabled(playback::LitAudioPlayback::METRONOME_MIX_INDEX,
+                                                         metronome_focus);
+
+    // Update metronome settings
+    if (metronome_focus) {
+        auto time_signature = ui->metronomeWidget->getTimeSignature();
+        if (time_signature != player.getPlayback()->getMetronomeProvider()->getProcessor().getTimeSignature()) {
+            player.getPlayback()->setTimeSignature(ui->metronomeWidget->getTimeSignature());
+
+            // Update waveform
+            if(recalculate) {
+                ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
+            }
+        }
+    }
+}
+
 void PlayerWindow::on_play_clicked() {
-    if (ui->play->isChecked()) player.getEngine()->getController()->start();
-    else player.getEngine()->getController()->stop();
+    if (ui->play->isChecked()) {
+        // Start
+        if(player.getPlayback()->getMixerProvider()->getMaster()) {
+            changeFocus(true);
+            player.getEngine()->getController()->start();
+        } else {
+            ui->play->setChecked(false);
+        }
+    } else {
+        // Stop
+        player.getEngine()->getController()->stop();
+    }
 }
 
 void PlayerWindow::onStart() {
@@ -126,22 +163,23 @@ void PlayerWindow::onQueueChanged() {
 
 void PlayerWindow::onProviderChange(const std::shared_ptr<AudioProviderInterface<float>> &provider) {
     // TODO: copy shptr
+    // Update Waveform
     ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
 }
 
 void PlayerWindow::on_metronomeWidget_startClicked(bool down) {
     auto time_signature = ui->metronomeWidget->getTimeSignature();
-    player.getPlayback()->setTimeSignature(time_signature);
-    player.getPlayback()->getMixerProvider()->setMaster(1);
 
     std::stringstream ss;
-    ss << "Metronome - BPM: " << time_signature.getBpm() << ", TS: " << time_signature.getUpper() << "/" << time_signature.getLower();
+    ss << "Metronome - BPM: " << time_signature.getBpm() << ", TS: " << time_signature.getUpper() << "/"
+       << time_signature.getLower();
     auto item = new struct::AudioItemDescriptor(ss.str(), false, "", true, time_signature);
+
     player.getEngine()->getController()->stop();
+    player.getPlayback()->getMixerProvider()->setMaster(playback::LitAudioPlayback::METRONOME_MIX_INDEX);
+    changeFocus(false);
     player.getQueue().setCurrent(item);
     player.getEngine()->getController()->start();
-
-    ui->seekbar->setInput(new algorithm::FrameFactoryVecProvider<float>(player.getPlayback().get(), 1, 1));
 }
 
 void PlayerWindow::on_metronomeWidget_detectClicked() {

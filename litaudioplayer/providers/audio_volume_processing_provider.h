@@ -15,7 +15,7 @@ namespace litaudioplayer { namespace providers {
         float thresh;
 
     public:
-        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.1f,
+        AudioVolumeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child, float volume = 0.5f,
                                       float thresh = -46)
                 : AudioProcessingProvider<T>(child), volume(volume), thresh(powf(10, thresh / 20)) {}
 

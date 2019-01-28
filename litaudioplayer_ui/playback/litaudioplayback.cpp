@@ -26,7 +26,7 @@ LitAudioPlayback::LitAudioPlayback(const EngineProperties &properties,
             read_audio<float>("data/metronomes/A/Metronome.wav", properties.sample_rate));
     metronome_provider = std::make_shared<AudioMetronomeSourceProvider<float>>(TimeSignature(), downbeat_tick,
                                                                                beat_tick);
-    mixer_provider->setChannel(1, metronome_provider);
+    mixer_provider->setChannel(METRONOME_MIX_INDEX, metronome_provider);
 
 }
 
@@ -43,7 +43,8 @@ std::shared_ptr<AudioProviderInterface<float>> &LitAudioPlayback::getProvider() 
 }
 
 void LitAudioPlayback::setProvider(const std::shared_ptr<AudioProviderInterface<float>> &provider) {
-    mixer_provider->setChannel(0, provider);
+    mixer_provider->setChannel(AUDIO_MIX_INDEX, provider);
+    EACH_OBSERVER(observer->onProviderChange(provider));
 }
 
 void LitAudioPlayback::setTimeSignature(const TimeSignature &time_signature) {
