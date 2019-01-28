@@ -32,43 +32,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0" alignment="Qt::AlignHCenter">
-      <widget class="QWidget" name="mixerChannel0" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <item alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="mixerChannel1Slider">
-          <property name="text">
-           <string>Metronome</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item alignment="Qt::AlignHCenter">
-         <widget class="QSlider" name="mixerChannel0Slider">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
+    <layout class="QHBoxLayout" name="mixerContainerLayout"/>
    </item>
   </layout>
  </widget>

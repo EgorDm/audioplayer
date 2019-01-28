@@ -88,6 +88,10 @@ namespace litaudioplayer { namespace providers {
             levels[index] = level;
         }
 
+        float getLevel(int index) {
+            return levels[index];
+        }
+
         void setChannel(int index, const std::shared_ptr<AudioProviderInterface<T>> &channel) {
             channels[index] = channel;
             if(index == master_index) this->setChild(channel);

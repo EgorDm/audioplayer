@@ -72,6 +72,8 @@ private slots:
 
     void on_metronomeWidget_detectClicked();
 
+    void on_mixerWidget_onChannelChanged(int index);
+
     void update();
 
 private:
