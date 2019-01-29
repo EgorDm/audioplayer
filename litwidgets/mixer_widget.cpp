@@ -13,11 +13,12 @@ MixerWidget::MixerWidget(QWidget *parent) : QWidget(parent), ui(new Ui::MixerWid
 }
 
 int MixerWidget::addMix(const std::string &name, int value) {
-    int index = channels.size();
+    int index = static_cast<int>(channels.size());
     auto stub = createMixStub();
     stub->findChild<QLabel *>()->setText(QString::fromStdString(name));
     auto slider = stub->findChild<QSlider *>();
-    slider->setMaximum(150);
+    slider->setMaximum(maximum);
+    slider->setMinimum(minimum);
     slider->setValue(value);
 
     connect(slider, &QSlider::sliderReleased, [=]() {
@@ -28,11 +29,11 @@ int MixerWidget::addMix(const std::string &name, int value) {
     return index;
 }
 
-int MixerWidget::getChannelValue(int index) {
+int MixerWidget::getChannelDb(int index) {
     return channels[index]->findChild<QSlider *>()->value();
 }
 
-void MixerWidget::setChannelValue(int index, int value) {
+void MixerWidget::setChannelDb(int index, int value) {
     channels[index]->findChild<QSlider *>()->setValue(value);
 }
 
@@ -46,4 +47,22 @@ QWidget *MixerWidget::createMixStub() {
     ui->mixerContainerLayout->addWidget(widget, 0, Qt::AlignHCenter);
 
     return widget;
+}
+
+int MixerWidget::getMinimum() const {
+    return minimum;
+}
+
+void MixerWidget::setMinimum(int minimum) {
+    MixerWidget::minimum = minimum;
+    for(auto widget : channels) widget->findChild<QSlider *>()->setMinimum(minimum);
+}
+
+int MixerWidget::getMaximum() const {
+    return maximum;
+}
+
+void MixerWidget::setMaximum(int maximum) {
+    MixerWidget::maximum = maximum;
+    for(auto widget : channels) widget->findChild<QSlider *>()->setMaximum(maximum);
 }

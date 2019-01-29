@@ -18,15 +18,26 @@ namespace litwidgets {
 
         int addMix(const std::string &name, int value = 100);
 
-        int getChannelValue(int index);
+        int getChannelDb(int index);
 
-        void setChannelValue(int index, int value);
+        void setChannelDb(int index, int value);
+
+        int getMinimum() const;
+
+        void setMinimum(int minimum);
+
+        int getMaximum() const;
+
+        void setMaximum(int maximum);
 
     signals:
         void onChannelChanged(int index);
 
     protected:
         QWidget *createMixStub();
+
+        int minimum = -46;
+        int maximum = 46;
 
     private:
         Ui::MixerWidget *ui;

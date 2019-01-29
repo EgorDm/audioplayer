@@ -11,6 +11,7 @@
 #include <QtWidgets/QListWidgetItem>
 #include <QTimer>
 #include <unordered_map>
+#include <helpers/mixer_wrapper.h>
 #include "audio_item.h"
 #include "litaudioplayer.h"
 
@@ -72,8 +73,6 @@ private slots:
 
     void on_metronomeWidget_detectClicked();
 
-    void on_mixerWidget_onChannelChanged(int index);
-
     void update();
 
 private:
@@ -81,6 +80,8 @@ private:
 
 private:
     Ui::PlayerWindow *ui;
+
+    std::unique_ptr<helpers::MixerWrapper> mixer_wrapper;
 
     QTimer *updater = new QTimer(this);
 

@@ -15,12 +15,12 @@ using namespace litaudiofile;
 PlayerWindow::PlayerWindow(QWidget *parent)
         : QMainWindow(parent), ui(new Ui::PlayerWindow) {
     ui->setupUi(this);
-    //this->setFixedSize(this->geometry().width(), this->geometry().height());
+    mixer_wrapper = std::make_unique<helpers::MixerWrapper>(ui->mixerWidget, player.getPlayback()->getMixerProvider());
 
     connect(updater, SIGNAL(timeout()), this, SLOT(update()));
 
-    ui->mixerWidget->addMix("Audio Source", player.getPlayback()->getMixerProvider()->getLevel(playback::LitAudioPlayback::AUDIO_MIX_INDEX) * 100);
-    ui->mixerWidget->addMix("Metronome", player.getPlayback()->getMixerProvider()->getLevel(playback::LitAudioPlayback::METRONOME_MIX_INDEX) * 100);
+    mixer_wrapper->addChannel("Audio Source", playback::LitAudioPlayback::AUDIO_MIX_INDEX);
+    mixer_wrapper->addChannel("Metronome", playback::LitAudioPlayback::METRONOME_MIX_INDEX);
 
     ui->volumeBar->setValue(ACI(player.getPlayback()->getVolumeProcessor()->getVolumeDb()));
     player.getQueue().addObserver(this);
@@ -188,10 +188,3 @@ void PlayerWindow::on_metronomeWidget_startClicked(bool down) {
 void PlayerWindow::on_metronomeWidget_detectClicked() {
 
 }
-
-void PlayerWindow::on_mixerWidget_onChannelChanged(int index) {
-    int value = ui->mixerWidget->getChannelValue(index);
-    player.getPlayback()->getMixerProvider()->setLevel(index, value / 100.f);
-}
-
-
