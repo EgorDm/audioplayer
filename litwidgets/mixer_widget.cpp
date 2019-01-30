@@ -25,6 +25,10 @@ int MixerWidget::addMix(const std::string &name, int value) {
         emit onChannelChanged(index);
     });
 
+    connect(slider, &QSlider::sliderMoved, [=](int value) {
+        emit onChannelValueChanged(index, value);
+    });
+
     channels.push_back(stub);
     return index;
 }

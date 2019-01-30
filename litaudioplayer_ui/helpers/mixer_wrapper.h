@@ -20,6 +20,8 @@ namespace litaudioplayer { namespace helpers {
 
         void on_mixerWidget_onChannelChanged(int index);
 
+        void on_mixerWidget_onChannelValueChanged(int index, int value);
+
         void addChannel(const std::string &name, int channel);
     };
 }};

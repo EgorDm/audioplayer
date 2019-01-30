@@ -33,6 +33,8 @@ namespace litwidgets {
     signals:
         void onChannelChanged(int index);
 
+        void onChannelValueChanged(int index, int value);
+
     protected:
         QWidget *createMixStub();
 

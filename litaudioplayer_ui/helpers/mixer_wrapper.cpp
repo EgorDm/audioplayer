@@ -11,12 +11,15 @@ MixerWrapper::MixerWrapper(litwidgets::MixerWidget *widget,
                            const std::shared_ptr<providers::AudioMixerProcessingProvider<float>> &mixer_provider)
         : widget(widget), mixer_provider(mixer_provider) {
     connect(widget, &litwidgets::MixerWidget::onChannelChanged, this, &MixerWrapper::on_mixerWidget_onChannelChanged);
-
-
+    connect(widget, &litwidgets::MixerWidget::onChannelValueChanged, this, &MixerWrapper::on_mixerWidget_onChannelValueChanged);
 }
 
 void MixerWrapper::on_mixerWidget_onChannelChanged(int index) {
     int value = widget->getChannelDb(index);
+    mixer_provider->setLevel(index, litaudio::audio_utils::dbToAmplitude(value));
+}
+
+void MixerWrapper::on_mixerWidget_onChannelValueChanged(int index, int value) {
     mixer_provider->setLevel(index, litaudio::audio_utils::dbToAmplitude(value));
 }
 

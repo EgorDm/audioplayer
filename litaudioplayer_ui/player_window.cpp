@@ -50,7 +50,7 @@ void PlayerWindow::on_listWidget_itemDoubleClicked(QListWidgetItem *item) {
     int item_index = getItemIndex(item->data(Qt::UserRole).toInt());
     if (item_index < 0) return;
 
-    player.getEngine()->getController()->stop();
+    player.getEngine()->getController()->stop(); // TODO:
     player.getPlayback()->getMixerProvider()->setMaster(playback::LitAudioPlayback::AUDIO_MIX_INDEX);
     changeFocus(false);
     player.getQueue().setCurrent(item_index);
@@ -171,6 +171,11 @@ void PlayerWindow::onProviderChange(const std::shared_ptr<AudioProviderInterface
 }
 
 void PlayerWindow::on_metronomeWidget_startClicked(bool down) {
+    if(!down) {
+        player.getEngine()->getController()->stop();
+        return;
+    }
+
     auto time_signature = ui->metronomeWidget->getTimeSignature();
 
     std::stringstream ss;
@@ -185,6 +190,4 @@ void PlayerWindow::on_metronomeWidget_startClicked(bool down) {
     player.getEngine()->getController()->start();
 }
 
-void PlayerWindow::on_metronomeWidget_detectClicked() {
-
-}
+void PlayerWindow::on_metronomeWidget_detectClicked() {}

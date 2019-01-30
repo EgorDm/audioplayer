@@ -19,6 +19,9 @@ namespace litaudioplayer { namespace providers {
         TimeSignature time_signature;
         std::shared_ptr<AudioContainerDeinterleavedType<T>> downbeat_tick;
         std::shared_ptr<AudioContainerDeinterleavedType<T>> beat_tick;
+        int beat_interval = 1;
+        int bar_interval = 1;
+        int offset = 0;
 
     public:
         AudioMetronomeProcessingProvider(const std::shared_ptr<AudioProviderInterface<T>> &child,
@@ -26,20 +29,24 @@ namespace litaudioplayer { namespace providers {
                                          const std::shared_ptr<AudioContainerDeinterleavedType<T>> &downbeat_tick,
                                          const std::shared_ptr<AudioContainerDeinterleavedType<T>> &beat_tick)
                 : AudioProcessingProvider<T>(child), time_signature(time_signature),
-                  downbeat_tick(downbeat_tick), beat_tick(beat_tick) {}
+                  downbeat_tick(downbeat_tick), beat_tick(beat_tick) {
+            setTimeSignature(time_signature);
+        }
 
         void process(AudioBufferDeinterleavedInterface<T> *buffer, AudioBufferDeinterleavedInterface<T> *swap,
                      int sample_count, int cursor) const override {
-            // Interval between each 1 / ts.upper th note. In samples
-            int interval = static_cast<int>(this->getSampleRate() * time_signature.getBeatDuration());
-            int offset = static_cast<int>(time_signature.getOffset() * this->getSampleRate());
-
             int out_cursor = 0;
-            int in_cursor = (cursor + offset) % interval;
+            int main_cursor = cursor + offset;
+            int in_cursor = main_cursor % beat_interval;
+            int beat_id = 0;
+            AudioBufferDeinterleavedInterface<T> *tick_buffer;
             while (out_cursor < sample_count) {
-                int copy_count = std::min(beat_tick->getSampleCount() - in_cursor, sample_count - out_cursor);
-                litaudio::utils::add_buffers<T>(buffer, beat_tick->getTypedBuffer(), out_cursor, in_cursor, copy_count);
-                out_cursor += interval - in_cursor;
+                beat_id = (main_cursor % bar_interval) / beat_interval;
+                tick_buffer = beat_id == 0 ? downbeat_tick->getTypedBuffer() : beat_tick->getTypedBuffer();
+                int copy_count = std::min(tick_buffer->getSampleCount() - in_cursor, sample_count - out_cursor);
+                litaudio::utils::add_buffers<T>(buffer, tick_buffer, out_cursor, in_cursor, copy_count);
+                out_cursor += beat_interval - in_cursor;
+                main_cursor += beat_interval - in_cursor;
                 in_cursor = 0;
             }
         }
@@ -50,6 +57,11 @@ namespace litaudioplayer { namespace providers {
 
         void setTimeSignature(const TimeSignature &time_signature) {
             AudioMetronomeProcessingProvider::time_signature = time_signature;
+            // Interval between each 1 / ts.upper th note. In samples
+            beat_interval = static_cast<int>(this->getSampleRate() * time_signature.getBeatDuration());
+            bar_interval = static_cast<int>(this->getSampleRate() * time_signature.getBarDuration());
+            offset = static_cast<int>(time_signature.getOffset() * this->getSampleRate());
+            while (offset > 0) offset -= beat_interval;
         }
 
         const std::shared_ptr<AudioContainerInterface> &getDownbeatTick() const {

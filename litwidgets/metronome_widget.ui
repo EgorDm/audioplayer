@@ -175,6 +175,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="btnMetronomeStart">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
        <property name="text">
         <string>Start</string>
        </property>
